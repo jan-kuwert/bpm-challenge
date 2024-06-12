@@ -1,7 +1,13 @@
 #! /usr/bin/python3
 import requests
 from enum import Enum, auto
-from bottle import route, run, template, post, get, put, delete
+from bottle import run, request, post, get, put, delete
+
+
+patientIds = 0
+patientQueue = []
+
+#add patient Types with their time values distributions from table
 
 resources = {
     "intake": {"current": 1, "max": 1},
@@ -13,30 +19,39 @@ resources = {
 
 
 class TaskType(Enum):
-    patient_admission = auto()
-    er_treatment = auto()
-    intake = auto()
-    surgery = auto()
-    nursing = auto()
-    releasing = auto()
-    replan_patient = auto()
+    patient_admission = 1
+    er = 2
+    intake = 3
+    surgery = 4
+    nursing = 5
+    releasing = 6
+    replan_patient = 7
 
 
 class InstanceType(Enum):
-    fork_running = auto()
-    fork_ready = auto()
-    wait_running = auto()
-    wait_ready = auto()
+    fork_running = 1
+    fork_ready = 2
+    wait_running = 3
+    wait_ready = 4
 
 
-class PatientType(Enum):
-    a = auto()
-    b = auto()
-    er = auto()
+class Treatments(Enum):
+    a = 1
+    b = 2
+    er = 3
+
+
+class PatientData(Enum):
+    id = 1
+    type = 2
+    treatment = 3
+    resources = []
 
 
 class SimulatorTask:
-    def __init__(self, type: TaskType, patient, resources: TaskType, duration):
+    def __init__(
+        self, type: TaskType, patient: PatientData, resources: TaskType, duration
+    ):
         self.type = type
         self.patient = patient
         self.resources = resources
@@ -53,18 +68,56 @@ class simulator:
         self.resources = resources
 
 
-@get("/names/<name>")
-def index(name):
-    return template("<b>Hello {name} </>!", name=name)
+@post("/patient_admission/<patientData>")
+def patient_admission():
+    try:
+        patientData = request.json
+        print(patientData)
+        patientData = request.body.read()
+        if hasattr(patientData, id) == False:
+            patientData.id = patientIds
+            patientIds += 1
+        if patientData.treatment == Treatments.er:
+            patientData.treatment = TaskType.er
+        else:
+            patientQueue.append(patientData)
+            patientData.treatment = TaskType.replan_patient
+        return
+    except Exception as e:
+        return e
 
 
-@get("/intake")
-def index():
+@post("/surgery/<patientData>")
+def index(patientData):
 
     return
 
 
-def new_instance(behavior: InstanceType = "fork_running", type="A"):
+@post("/nursing/<patientData>")
+def index(patientData):
+
+    return
+
+
+@post("/er/<patientData>")
+def index(patientData):
+
+    return
+
+
+@post("/releasing/<patientData>")
+def index(patientData):
+
+    return
+
+
+@post("/replan_patient/<patientData>")
+def index(patientData):
+
+    return
+
+
+def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
     url = "https://cpee.org/flow/start/url/"
     xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
     data = {"behavior": behavior, "url": xml_url, "init": {"type": type}}
