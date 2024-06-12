@@ -129,6 +129,6 @@ def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
     print("Respone:", response.response)
 
 
-new_instance()
+# new_instance()
 
 run(host="::1", port=23453)
