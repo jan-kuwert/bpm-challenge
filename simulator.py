@@ -7,7 +7,7 @@ from bottle import run, request, post, get, put, delete
 patientIds = 0
 patientQueue = []
 
-#add patient Types with their time values distributions from table
+# add patient Types with their time values distributions from table
 
 resources = {
     "intake": {"current": 1, "max": 1},
@@ -35,7 +35,7 @@ class InstanceType(Enum):
     wait_ready = 4
 
 
-class Treatments(Enum):
+class PatientType(Enum):
     a = 1
     b = 2
     er = 3
@@ -77,7 +77,7 @@ def patient_admission():
         if hasattr(patientData, id) == False:
             patientData.id = patientIds
             patientIds += 1
-        if patientData.treatment == Treatments.er:
+        if patientData.treatment == PatientType.er:
             patientData.treatment = TaskType.er
         else:
             patientQueue.append(patientData)
