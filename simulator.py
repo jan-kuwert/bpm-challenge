@@ -72,15 +72,15 @@ class simulator:
 def patient_admission():
     try:
         patientData = {}
-        patientData['id'] = request.forms.get("id")
-        patientData['type'] = request.forms.get("type")
-        print("data", patientData['id'], patientData['id'] == Null)
-        if patientData['id'] == Null:
+        patientData["id"] = request.forms.get("id")
+        patientData["type"] = request.forms.get("type")
+        print("data", patientData["id"], patientData["id"] >= 0)
+        if patientData["id"] >= 0:
             global patientIds
-            patientData['id'] = patientIds
+            patientData["id"] = patientIds
             patientIds += 1
-        if PatientType == 'er':
-            patientData['treatment'] = 'er'
+        if PatientType == "er":
+            patientData["treatment"] = "er"
         else:
             patientQueue.append(patientData)
             patientData.treatment = TaskType.replan_patient
