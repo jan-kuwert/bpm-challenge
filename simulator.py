@@ -2,7 +2,7 @@
 import requests
 from enum import Enum, auto
 from bottle import run, request, post, get, put, delete
-
+import json
 
 patientIds = 0
 patientQueue = []
@@ -68,22 +68,25 @@ class simulator:
         self.resources = resources
 
 
-@post("/patient_admission/<patientData>")
+@post("/patient_admission")
 def patient_admission():
     try:
-        patientData = request.json
-        print(patientData)
-        patientData = request.body.read()
-        if hasattr(patientData, id) == False:
-            patientData.id = patientIds
+        patientData = {}
+        patientData['id'] = request.forms.get("id")
+        patientData['type'] = request.forms.get("type")
+        print("data", patientData['id'], patientData['id'] == Null)
+        if patientData['id'] == Null:
+            global patientIds
+            patientData['id'] = patientIds
             patientIds += 1
-        if patientData.treatment == PatientType.er:
-            patientData.treatment = TaskType.er
+        if PatientType == 'er':
+            patientData['treatment'] = 'er'
         else:
             patientQueue.append(patientData)
             patientData.treatment = TaskType.replan_patient
-        return
+        return patientData
     except Exception as e:
+        print(e)
         return e
 
 
