@@ -74,8 +74,8 @@ def patient_admission():
         patientData = {}
         patientData["id"] = request.forms.get("id")
         patientData["type"] = request.forms.get("type")
-        print("data", patientData["id"], patientData["id"] >= 0)
-        if patientData["id"] >= 0:
+        print("data", patientData["id"], patientData["id"] == '')
+        if patientData["id"] == '':
             global patientIds
             patientData["id"] = patientIds
             patientIds += 1
