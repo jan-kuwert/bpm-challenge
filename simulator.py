@@ -56,6 +56,7 @@ def patient_admission():
         patientData = {}
         patientData["id"] = request.forms.get("id")
         patientData["type"] = request.forms.get("type")
+        patientData["scheduled"] = "false"
         if patientData["type"] == "er":
             patientData["treatment"] = "er"
         else:
