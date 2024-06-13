@@ -58,6 +58,8 @@ def patient_admission():
         patientData["type"] = request.forms.get("type")
         if patientData["type"] == "er":
             patientData["treatment"] = "er"
+        else:
+            patientData["treatment"] = ""
         patientData["admission_time"] = request.forms.get("admission_time")
         if not patientData["admission_time"] or patientData["admission_time"] == None:
             patientData["admission_time"] = datetime.now().strftime(
