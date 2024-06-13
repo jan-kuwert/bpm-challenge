@@ -166,5 +166,6 @@ def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
 
 
 # new_instance()
+create_database()
 
 run(host="::1", port=23453)
