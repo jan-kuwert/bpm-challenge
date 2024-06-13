@@ -44,7 +44,6 @@ def patient_admission():
         patientData = {}
         patientData["id"] = request.forms.get("id")
         if not patientData["id"]:
-            patientData["id"] = add_patient(patientData)
             patientData["type"] = request.forms.get("type")
             patientData["scheduled"] = "false"
             patientData["start_time"] = CURRENT_TIME
@@ -61,7 +60,7 @@ def patient_admission():
             elif patientData["type"] == "EM":
                 patientData["resources"] = "EM"
             patientData["resources_available"] = True  # TODO implement
-            set_patient(patientData)
+            patientData["id"] = add_patient(patientData)
         else:
             patientData = get_patient(patientData["id"])
 
@@ -250,13 +249,13 @@ def set_patient(patientData):
         cursor.execute(
             """
             UPDATE patients
-            SET type = ?, admission_time = ?, treatment = ?, resources = ?, scheduled = ?
+            SET type = ?, admission_time = ?, diagnosis = ?, resources = ?, scheduled = ?
             WHERE id = ?
             """,
             (
                 patientData["type"],
                 patientData["admission_time"],
-                patientData["treatment"],
+                patientData["diagnosis"],
                 patientData["resources"],
                 patientData["scheduled"],
                 patientData["id"],
