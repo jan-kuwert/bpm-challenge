@@ -12,11 +12,11 @@ patientQueue = []
 # add patient Types with their time values distributions from table
 
 resources = {
-    "intake": {"current": 1, "max": 1},
-    # "intake": {"current": 4, "max": 4},
-    # "surgery": {"current": 5, "max": 5},
-    # "nursing": {"a": {"current": 30, "max": 30}, "b": {"current": 40, "max": 40}},
-    # "er": {"current": 9, "max": 9},
+    {"name": "intake", "current": 4, "max": 4},
+    {"name": "surgery", "current": 5, "max": 5},
+    {"name": "nursing_a", "current": 30, "max": 30},
+    {"name": "nursing_b", "current": 40, "max": 40},
+    {"name": "er", "current": 9, "max": 9},
 }
 
 
@@ -150,8 +150,41 @@ def create_database():
         )
         """
     )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS Resources(
+            id TEXT PRIMARY KEY,
+            current INTEGER NOT NULL,
+            max INTEGER NOT NULL
+        )
+        """
+    )
+
     connection.commit()
     connection.close()
+
+
+def add_resource(resource):
+    try:
+        connection = sqlite3.connect("hospital.db")
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO Resources(id, current, max)
+            VALUES(?, ?, ?)
+            """,
+            (
+                resource["id"],
+                resource["current"],
+                resource["max"],
+            ),
+        )
+        connection.commit()
+        connection.close()
+        return cursor.lastrowid
+    except Exception as e:
+        print("add_resource_error: ", e)
+    return
 
 
 def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
@@ -166,7 +199,12 @@ def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
     print("Respone:", response.response)
 
 
-# new_instance()
+# creates tables if tables not there already
 create_database()
 
+# add resources to database
+for resource in resources:
+    add_resource(resource)
+
+# start the server with tcp6
 run(host="::1", port=23453)
