@@ -141,7 +141,7 @@ def create_database():
         """
         CREATE TABLE IF NOT EXISTS Patients(
             id INTEGER PRIMARY KEY,
-            type TEXT NOT NULL
+            type TEXT NOT NULL,
             admission_time TEXT NOT NULL,
             treatment TEXT,
             resources TEXT,
