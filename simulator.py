@@ -60,7 +60,7 @@ def patient_admission():
         if patientData["type"] == "er":
             patientData["treatment"] = "er"
         else:
-            patientData["treatment"] = "unknown"
+            patientData["treatment"] = ""
         patientData["admission_time"] = request.forms.get("admission_time")
         if not patientData["admission_time"] or patientData["admission_time"] == None:
             patientData["admission_time"] = datetime.now().strftime(
@@ -117,7 +117,7 @@ def add_patient(patientData):
         cursor.execute(
             """
             INSERT INTO Patients(type, admission_time, treatment, resources, scheduled)
-            VALUES(?, ?, ?, ?)
+            VALUES(?, ?, ?, ?, ?)
             """,
             (
                 patientData["type"],
