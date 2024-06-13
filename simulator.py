@@ -136,7 +136,7 @@ def add_patient(patientData):
 
 def create_database():
     connection = sqlite3.connect("hospital.db")
-    cursor = connection.cursor
+    cursor = connection.cursor()
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS Patients(
