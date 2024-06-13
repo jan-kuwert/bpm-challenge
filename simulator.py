@@ -90,6 +90,7 @@ def patient_admission():
             patientData["resources"] = "er"
         if not patientData["id"]:
             patientData["id"] = add_patient(patientData)
+        print ("Patient Data:", patientData)
         return patientData
     except Exception as e:
         print("patient_admission", e)
