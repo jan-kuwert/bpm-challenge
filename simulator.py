@@ -45,15 +45,15 @@ def patient_admission():
         patientData["id"] = request.forms.get("id")
         if not patientData["id"]:
             patientData["type"] = request.forms.get("type")
-            patientData["scheduled"] = "false"
-            patientData["start_time"] = CURRENT_TIME
-            patientData["total_time"] = 0  # tracks time spent in hospital
-            patientData["diagnosis"] = request.forms.get("diagnosis")
             patientData["admission_time"] = request.forms.get("admission_time")
             if not patientData["admission_time"]:
                 patientData["admission_time"] = datetime.now().strftime(
                     "%m/%d/%Y, %H:%M:%S"
                 )
+            patientData["start_time"] = CURRENT_TIME
+            patientData["total_time"] = 0  # tracks time spent in hospital
+            patientData["diagnosis"] = request.forms.get("diagnosis")
+            patientData["scheduled"] = "false"
             patientData["resources"] = request.forms.get("resources")
             if patientData["resources"] == None and patientData["type"] != "EM":
                 patientData["resources"] = "intake"
@@ -175,9 +175,12 @@ def create_database():
             id INTEGER PRIMARY KEY,
             type TEXT NOT NULL,
             admission_time TEXT NOT NULL,
+            start_time TEXT NOT NULL,
+            total_time TEXT NOT NULL,
             diagnosis TEXT,
+            scheduled TEXT,
             resources TEXT,
-            scheduled TEXT
+            resources_available TEXT
         )
         """
     )
@@ -203,15 +206,18 @@ def add_patient(patientData):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO patients(type, admission_time, diagnosis, resources, scheduled)
-            VALUES(?, ?, ?, ?, ?)
+            INSERT INTO patients(type, admission_time, start_time, total_time, diagnosis, scheduled, resources, resources_available)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 patientData["type"],
                 patientData["admission_time"],
+                patientData["start_time"],
+                patientData["total_time"],
                 patientData["diagnosis"],
-                patientData["resources"],
                 patientData["scheduled"],
+                patientData["resources"],
+                patientData["resources_available"],
             ),
         )
         connection.commit()
@@ -240,9 +246,12 @@ def get_patient(patientId):
         patientData["id"] = patient[0]
         patientData["type"] = patient[1]
         patientData["admission_time"] = patient[2]
-        patientData["diagnosis"] = patient[3]
-        patientData["resources"] = patient[4]
-        patientData["scheduled"] = patient[5]
+        patientData["start_time"] = patient[3]
+        patientData["total_time"] = patient[4]
+        patientData["diagnosis"] = patient[5]
+        patientData["scheduled"] = patient[6]
+        patientData["resources"] = patient[7]
+        patientData["resources_available"] = patient[8]
         return patientData
     except Exception as e:
         print("get_patient_error: ", e)
@@ -257,15 +266,18 @@ def set_patient(patientData):
         cursor.execute(
             """
             UPDATE patients
-            SET type = ?, admission_time = ?, diagnosis = ?, resources = ?, scheduled = ?
+            SET type = ?, admission_time = ?, start_time =?, total_time =?, diagnosis = ?, scheduled = ?, resources = ?, resources_available = ?
             WHERE id = ?
             """,
             (
                 patientData["type"],
                 patientData["admission_time"],
+                patientData["start_time"],
+                patientData["total_time"],
                 patientData["diagnosis"],
-                patientData["resources"],
                 patientData["scheduled"],
+                patientData["resources"],
+                patientData["resources_available"],
                 patientData["id"],
             ),
         )
