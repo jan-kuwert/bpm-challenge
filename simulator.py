@@ -116,11 +116,12 @@ def add_patient(patientData):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO Patients(type, treatment, resources, scheduled)
+            INSERT INTO Patients(type, admission_time, treatment, resources, scheduled)
             VALUES(?, ?, ?, ?)
             """,
             (
                 patientData["type"],
+                patientData['admission_time'],
                 patientData["treatment"],
                 patientData["resources"],
                 patientData["scheduled"],
