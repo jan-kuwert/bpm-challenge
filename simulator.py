@@ -96,9 +96,9 @@ def intake():
         print(patientData)
         mean = request.forms.get("mean", INTAKE_TIME[0])
         sigma = request.forms.get("sigma", INTAKE_TIME[1])
-        patientData["total_time"] = (
+        patientData["total_time"] = str(
             float(patientData["total_time"]) + np.random.normal(mean, sigma)
-        ).tostring()
+        )
         print("Intake Time:", patientData["total_time"])
         return
     except Exception as e:
