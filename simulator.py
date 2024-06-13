@@ -4,7 +4,7 @@ from enum import Enum, auto
 from bottle import run, request, post, get, put, delete
 import json
 import sqlite3
-import datetime()
+import datetime
 
 patientIds = 0
 patientQueue = []
@@ -90,7 +90,7 @@ def patient_admission():
             patientData["id"] = add_patient(patientData)
         return patientData
     except Exception as e:
-        print('patient_admission',e)
+        print("patient_admission", e)
         return e
 
 
@@ -123,6 +123,7 @@ def index(patientData):
 
     return
 
+
 def add_patient(patientData):
     try:
         connection = sqlite3.connect("hospital.db")
@@ -132,7 +133,12 @@ def add_patient(patientData):
             INSERT INTO Patients(type, treatment, resources, scheduled)
             VALUES(?, ?, ?, ?)
             """,
-            (patientData["type"], patientData["treatment"], patientData["resources"], patientData["scheduled"])
+            (
+                patientData["type"],
+                patientData["treatment"],
+                patientData["resources"],
+                patientData["scheduled"],
+            ),
         )
         connection.commit()
         connection.close()
@@ -140,6 +146,7 @@ def add_patient(patientData):
     except Exception as e:
         print(e)
     return
+
 
 def create_database():
     connection = sqlite3.connect("hospital.db")
