@@ -145,7 +145,7 @@ def create_database():
             admission_time TEXT NOT NULL,
             treatment TEXT,
             resources TEXT,
-            scheduled TEXT,
+            scheduled TEXT
         )
         """
     )
