@@ -3,6 +3,8 @@ import requests
 from enum import Enum, auto
 from bottle import run, request, post, get, put, delete
 import json
+import sqlite3
+import datetime()
 
 patientIds = 0
 patientQueue = []
@@ -74,49 +76,87 @@ def patient_admission():
         patientData = {}
         patientData["id"] = request.forms.get("id")
         patientData["type"] = request.forms.get("type")
-        if patientData["id"] == '':
-            global patientIds
-            patientData["id"] = patientIds
-            patientIds += 1
         if patientData["type"] == "er":
             patientData["treatment"] = "er"
-        else:
-            patientQueue.append(patientData)
-            patientData.treatment = TaskType.replan_patient
+        patientData["admission_time"] = request.forms.get("admission_time")
+        if patientData["admission_time"] == None:
+            patientData["admission_time"] = datetime.now()
+        patientData["resources"] = request.forms.get("resources")
+        if patientData["resources"] == None and patientData["type"] != "er":
+            patientData["resources"] = "intake"
+        elif patientData["type"] == "er":
+            patientData["resources"] = "er"
+        if patientData["id"] == None:
+            add_patient(patientData)
         return patientData
     except Exception as e:
-        print(e)
+        print('patient_admission',e)
         return e
 
 
-@post("/surgery/<patientData>")
+@post("/surgery")
 def index(patientData):
 
     return
 
 
-@post("/nursing/<patientData>")
+@post("/nursing")
 def index(patientData):
 
     return
 
 
-@post("/er/<patientData>")
+@post("/er")
 def index(patientData):
 
     return
 
 
-@post("/releasing/<patientData>")
+@post("/releasing")
 def index(patientData):
 
     return
 
 
-@post("/replan_patient/<patientData>")
+@post("/replan_patient")
 def index(patientData):
 
     return
+
+def add_patient(patientData):
+    try:
+        connection = sqlite3.connect("hospital.db")
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO Patients(id, type, treatment, resources, scheduled)
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            (patientData["id"], patientData["type"], patientData["treatment"], patientData["resources"], patientData["scheduled"])
+        )
+        connection.commit()
+        connection.close()
+    except Exception as e:
+        print(e)
+    return
+
+def create_database():
+    connection = sqlite3.connect("hospital.db")
+    cursor = connection.cursor
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS Patients(
+            id INTEGER PRIMARY KEY,
+            type TEXT NOT NULL
+            admission_time TEXT NOT NULL,
+            treatment TEXT,
+            resources TEXT,
+            scheduled TEXT,
+        )
+        """
+    )
+    connection.commit()
+    connection.close()
 
 
 def new_instance(type: PatientType, behavior: InstanceType = "fork_running"):
