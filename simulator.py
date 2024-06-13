@@ -21,7 +21,8 @@ PATIENT_IDS = 0
 PATIENT_QUEUE = []
 CURRENT_TIME = 60 * 8  # 8:00 AM
 INSTANCE_TYPES = ["fork_running", "fork_ready", "wait_running", "wait_ready"]
-PATIENT_TYPES = ["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "EM"]
+DIAGNOSIS_TYPES = ["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4"]
+PATIENT_TYPES = ["A", "B", "EM"]
 INTAKE_TIME = [1, 0.125]
 SURGERY_TIME = [
     [0, 0],
@@ -49,9 +50,9 @@ def patient_admission():
             patientData["start_time"] = CURRENT_TIME
             patientData["total_time"] = 0  # tracks time spent in hospital
             if patientData["type"] == "EM":
-                patientData["treatment"] = "EM"
+                patientData["diagnosis"] = "EM"
             else:
-                patientData["treatment"] = ""
+                patientData["diagnosis"] = ""
             patientData["admission_time"] = request.forms.get("admission_time")
             if not patientData["admission_time"]:
                 patientData["admission_time"] = datetime.now().strftime(
@@ -62,6 +63,7 @@ def patient_admission():
                 patientData["resources"] = "intake"
             elif patientData["type"] == "EM":
                 patientData["resources"] = "EM"
+            patientData["resources_available"] = True  # TODO implement
             set_patient(patientData)
         else:
             patientData = get_patient(patientData["id"])
@@ -80,10 +82,11 @@ def replan_patient():
         patientData["scheduled"] = "true"
         patientData["start_time"] = (
             CURRENT_TIME + 12 * 60
-        )  # add smart time decision here
-        # response = create_instance(patientData)
+        )  # TODO add smart time decision here
+        # response = create_instance(patientData) # TODO implement new instance management
         response = True
         set_patient(patientData)
+        print("Patient Replanned:", patientData)
         return response
     except Exception as e:
         print("replan_patient_error: ", e)
