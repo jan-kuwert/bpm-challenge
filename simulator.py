@@ -49,10 +49,7 @@ def patient_admission():
             patientData["scheduled"] = "false"
             patientData["start_time"] = CURRENT_TIME
             patientData["total_time"] = 0  # tracks time spent in hospital
-            if patientData["type"] == "EM":
-                patientData["diagnosis"] = "EM"
-            else:
-                patientData["diagnosis"] = ""
+            patientData["diagnosis"] = request.forms.get("diagnosis")
             patientData["admission_time"] = request.forms.get("admission_time")
             if not patientData["admission_time"]:
                 patientData["admission_time"] = datetime.now().strftime(
@@ -178,7 +175,7 @@ def create_database():
             id INTEGER PRIMARY KEY,
             type TEXT NOT NULL,
             admission_time TEXT NOT NULL,
-            treatment TEXT,
+            diagnosis TEXT,
             resources TEXT,
             scheduled TEXT
         )
@@ -206,13 +203,13 @@ def add_patient(patientData):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO patients(type, admission_time, treatment, resources, scheduled)
+            INSERT INTO patients(type, admission_time, diagnosis, resources, scheduled)
             VALUES(?, ?, ?, ?, ?)
             """,
             (
                 patientData["type"],
                 patientData["admission_time"],
-                patientData["treatment"],
+                patientData["diagnosis"],
                 patientData["resources"],
                 patientData["scheduled"],
             ),
