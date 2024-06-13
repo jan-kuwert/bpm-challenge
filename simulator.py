@@ -80,7 +80,7 @@ def patient_admission():
             patientData["treatment"] = "er"
         patientData["admission_time"] = request.forms.get("admission_time")
         if patientData["admission_time"] == None:
-            patientData["admission_time"] = datetime.now()
+            patientData["admission_time"] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         patientData["resources"] = request.forms.get("resources")
         if patientData["resources"] == None and patientData["type"] != "er":
             patientData["resources"] = "intake"
