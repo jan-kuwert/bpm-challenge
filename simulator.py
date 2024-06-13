@@ -93,8 +93,10 @@ def replan_patient():
 def intake():
     try:
         patientData = get_patient(request.forms.get("id"))
-        mean = request.forms.get("mean", INTAKE_TIME[0])
-        sigma = request.forms.get("sigma", INTAKE_TIME[1])
+        # mean = request.forms.get("mean", INTAKE_TIME[0])
+        # sigma = request.forms.get("sigma", INTAKE_TIME[1])
+        mean = INTAKE_TIME[0]
+        sigma = INTAKE_TIME[1]
         patientData["total_time"] += np.random.normal(mean, sigma)
 
         print("Intake Time:", patientData["total_time"])
