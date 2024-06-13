@@ -87,7 +87,7 @@ def patient_admission():
         elif patientData["type"] == "er":
             patientData["resources"] = "er"
         if patientData["id"] == None:
-            add_patient(patientData)
+            patientData["id"] = add_patient(patientData)
         return patientData
     except Exception as e:
         print('patient_admission',e)
@@ -129,13 +129,14 @@ def add_patient(patientData):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO Patients(id, type, treatment, resources, scheduled)
-            VALUES(?, ?, ?, ?, ?)
+            INSERT INTO Patients(type, treatment, resources, scheduled)
+            VALUES(?, ?, ?, ?)
             """,
-            (patientData["id"], patientData["type"], patientData["treatment"], patientData["resources"], patientData["scheduled"])
+            (patientData["type"], patientData["treatment"], patientData["resources"], patientData["scheduled"])
         )
         connection.commit()
         connection.close()
+        return cursor.lastrowid
     except Exception as e:
         print(e)
     return
