@@ -92,14 +92,10 @@ def replan_patient():
 @post("/intake")
 def intake():
     try:
-        print(INTAKE_TIME)
         patientData = get_patient(request.forms.get("id"))
-        # mean = request.forms.get("mean", INTAKE_TIME[0])
-        # sigma = request.forms.get("sigma", INTAKE_TIME[1])
-        print("intake data: ", patientData)
-        mean = INTAKE_TIME[0]
-        print("Mean:", mean)
-        sigma = INTAKE_TIME[1]
+        print(patientData)
+        mean = request.forms.get("mean", INTAKE_TIME[0])
+        sigma = request.forms.get("sigma", INTAKE_TIME[1])
         patientData["total_time"] += np.random.normal(mean, sigma)
 
         print("Intake Time:", patientData["total_time"])
@@ -241,12 +237,12 @@ def get_patient(patientId):
         patient = cursor.fetchone()
         connection.close()
         patientData = {}
-        patientData['id'] = patient[0]
-        patientData['type'] = patient[1]
-        patientData['admission_time'] = patient[2]
-        patientData['diagnosis'] = patient[3]
-        patientData['resources'] = patient[4]
-        patientData['scheduled'] = patient[5]
+        patientData["id"] = patient[0]
+        patientData["type"] = patient[1]
+        patientData["admission_time"] = patient[2]
+        patientData["diagnosis"] = patient[3]
+        patientData["resources"] = patient[4]
+        patientData["scheduled"] = patient[5]
         return patientData
     except Exception as e:
         print("get_patient_error: ", e)
