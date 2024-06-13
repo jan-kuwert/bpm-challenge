@@ -12,11 +12,11 @@ patientQueue = []
 # add patient Types with their time values distributions from table
 
 resources = [
-    {"name": "intake", "current": 4, "max": 4},
-    {"name": "surgery", "current": 5, "max": 5},
-    {"name": "nursing_a", "current": 30, "max": 30},
-    {"name": "nursing_b", "current": 40, "max": 40},
-    {"name": "er", "current": 9, "max": 9},
+    {"id": "intake", "current": 4, "max": 4},
+    {"id": "surgery", "current": 5, "max": 5},
+    {"id": "nursing_a", "current": 30, "max": 30},
+    {"id": "nursing_b", "current": 40, "max": 40},
+    {"id": "er", "current": 9, "max": 9},
 ]
 
 
