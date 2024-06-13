@@ -47,27 +47,7 @@ class PatientData(Enum):
     id = 1
     type = 2
     treatment = 3
-    resources = []
-
-
-class SimulatorTask:
-    def __init__(
-        self, type: TaskType, patient: PatientData, resources: TaskType, duration
-    ):
-        self.type = type
-        self.patient = patient
-        self.resources = resources
-        self.duration = duration
-
-    def __str__(self):
-        return (
-            f"Task: {self.type}, Resources: {self.resources}, Duration: {self.duration}"
-        )
-
-
-class simulator:
-    def __init__(self, resources):
-        self.resources = resources
+    resources = 4
 
 
 @post("/patient_admission")
@@ -90,10 +70,10 @@ def patient_admission():
             patientData["resources"] = "er"
         if not patientData["id"]:
             patientData["id"] = add_patient(patientData)
-        print ("Patient Data:", patientData)
+        print("Patient Data:", patientData)
         return patientData
     except Exception as e:
-        print("patient_admission", e)
+        print("patient_admission_error: ", e)
         return e
 
 
@@ -147,7 +127,7 @@ def add_patient(patientData):
         connection.close()
         return cursor.lastrowid
     except Exception as e:
-        print(e)
+        print("add_patient_error: ", e)
     return
 
 
