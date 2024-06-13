@@ -4,7 +4,7 @@ from enum import Enum, auto
 from bottle import run, request, post, get, put, delete
 import json
 import sqlite3
-import datetime
+from datetime import datetime
 
 patientIds = 0
 patientQueue = []
