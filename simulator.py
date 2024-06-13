@@ -79,14 +79,16 @@ def patient_admission():
         if patientData["type"] == "er":
             patientData["treatment"] = "er"
         patientData["admission_time"] = request.forms.get("admission_time")
-        if patientData["admission_time"] == None:
-            patientData["admission_time"] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        if not patientData["admission_time"] or patientData["admission_time"] == None:
+            patientData["admission_time"] = datetime.now().strftime(
+                "%m/%d/%Y, %H:%M:%S"
+            )
         patientData["resources"] = request.forms.get("resources")
         if patientData["resources"] == None and patientData["type"] != "er":
             patientData["resources"] = "intake"
         elif patientData["type"] == "er":
             patientData["resources"] = "er"
-        if patientData["id"] == None:
+        if not patientData["id"]:
             patientData["id"] = add_patient(patientData)
         return patientData
     except Exception as e:
