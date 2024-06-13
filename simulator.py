@@ -238,8 +238,15 @@ def get_patient(patientId):
             """,
             (patientId,),
         )
-        patientData = cursor.fetchone()
+        patient = cursor.fetchone()
         connection.close()
+        patientData = {}
+        patientData['id'] = patient[0]
+        patientData['type'] = patient[1]
+        patientData['admission_time'] = patient[2]
+        patientData['diagnosis'] = patient[3]
+        patientData['resources'] = patient[4]
+        patientData['scheduled'] = patient[5]
         return patientData
     except Exception as e:
         print("get_patient_error: ", e)
