@@ -219,7 +219,7 @@ def create_database():
         """
         CREATE TABLE IF NOT EXISTS logs(
             id INTEGER PRIMARY KEY,
-            patientId TEXT NOT NULL,
+            patientId INTEGER NOT NULL,
             patientData TEXT NOT NULL,
             tasks TEXT NOT NULL,
             error TEXT
@@ -402,9 +402,8 @@ def set_resource(resourceData):
         return
 
 
-def set_log(patientData, task, error=None):
+def set_log(patientData, task, error=''):
     try:
-        id = str(patientData["id"])
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
         cursor.execute(
@@ -412,7 +411,7 @@ def set_log(patientData, task, error=None):
             INSERT INTO logs(patientId, patientData, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
-            (id, patientData, task, error),
+            (patientData["id"], patientData, task, error),
         )
         connection.commit()
         connection.close()
