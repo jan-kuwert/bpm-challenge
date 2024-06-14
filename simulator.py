@@ -181,8 +181,8 @@ def releasing():
 def get_diagnosis_type_index(diagnosis):
     if diagnosis.startswith("EM") and diagnosis.split("-")[1].length() > 0:
         diagnosis = diagnosis.split("-")[1]
-    print("Patient Type: ", diagnosis, PATIENT_TYPES.index(diagnosis))
-    return PATIENT_TYPES.index(diagnosis)
+    print("Patient Type: ", diagnosis, DIAGNOSIS_TYPES.index(diagnosis))
+    return DIAGNOSIS_TYPES.index(diagnosis)
 
 
 # init the database if not alreadt present
