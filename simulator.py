@@ -411,7 +411,7 @@ def set_log(patientData, task, error=None):
             INSERT INTO logs(patientId, patientData, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
-            (patientData["id"], patientData, task, error),
+            (str(patientData["id"]), patientData, task, error),
         )
         connection.commit()
         connection.close()
