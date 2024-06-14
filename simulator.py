@@ -239,7 +239,7 @@ def add_patient(patientData):
         cursor.execute(
             """
             INSERT INTO patients(type, admission_time, start_time, total_time, diagnosis, scheduled, resources, resources_available, complications, phantom_pain)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 patientData["type"],
@@ -409,13 +409,12 @@ def set_log(patientData, task, error=None):
         cursor.execute(
             """
             INSERT INTO logs(patientId, patientData, tasks, error)
-            VALUES(?, ?, ?)
+            VALUES(?, ?, ?, ?)
             """,
             (patientData["id"], patientData, task, error),
         )
         connection.commit()
         connection.close()
-        print("Log Set:", patientData["id"], patientData, task, error)
         return cursor.lastrowid
     except Exception as e:
         print("set_log_error: ", e)
