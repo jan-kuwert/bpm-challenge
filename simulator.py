@@ -101,7 +101,6 @@ def replan_patient():
 def intake():
     try:
         patientData = get_patient(request.forms.get("id"))
-        print(patientData)
         mean = request.forms.get("mean", INTAKE_TIME[0])
         sigma = request.forms.get("sigma", INTAKE_TIME[1])
         patientData["total_time"] += np.random.normal(mean, sigma)
@@ -449,7 +448,7 @@ def get_log(patientId):
 def write_log_to_txt(patientId=None):
     try:
         log = str(get_log(patientId))
-        with open(f"log-{patientId}.txt", "a") as file:
+        with open(f"log-{patientId}.txt", "w") as file:
             file.write(log)
     except Exception as e:
         print("write_log_to_txt_error: ", e)
