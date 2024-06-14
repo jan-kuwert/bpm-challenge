@@ -186,7 +186,6 @@ def nursing():
             resource = get_resource("nursing_b")
         if resource["current"] <= 0:
             raise ValueError("No nursing resource available")
-
         mean = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
         sigma = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
         patientData["total_time"] += np.random.normal(mean, sigma)
@@ -280,7 +279,7 @@ def add_patient(patientData):
         cursor.execute(
             """
             INSERT INTO patients(type, admission_time, start_time, total_time, diagnosis, replanned, resource_available, complications, phantom_pain)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 patientData["type"],
