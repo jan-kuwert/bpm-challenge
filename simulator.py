@@ -104,9 +104,7 @@ def intake():
         print(patientData)
         mean = request.forms.get("mean", INTAKE_TIME[0])
         sigma = request.forms.get("sigma", INTAKE_TIME[1])
-        patientData["total_time"] = str(
-            float(patientData["total_time"]) + np.random.normal(mean, sigma)
-        )
+        patientData["total_time"] += np.random.normal(mean, sigma)
         set_log(patientData, "intake")
         return
     except Exception as e:
@@ -195,8 +193,8 @@ def create_database():
             id INTEGER PRIMARY KEY,
             type TEXT NOT NULL,
             admission_time TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            total_time TEXT NOT NULL,
+            start_time REAL NOT NULL,
+            total_time REAL NOT NULL,
             diagnosis TEXT,
             scheduled TEXT,
             resources TEXT,
