@@ -9,7 +9,7 @@ from pyprobs import Probability as pr
 from bottle import run, request, post, get, put, delete
 
 # for now in here
-RESOURCES = [
+resource = [
     {"name": "intake", "current": 4, "max": 4},
     {"name": "surgery", "current": 5, "max": 5},
     {"name": "nursing_a", "current": 30, "max": 30},
@@ -57,18 +57,29 @@ def patient_admission():
             patientData["start_time"] = CURRENT_TIME
             patientData["total_time"] = 0  # tracks time spent in hospital
             patientData["diagnosis"] = request.forms.get("diagnosis")
-            patientData["scheduled"] = "false"
-            patientData["resources"] = request.forms.get("resources")
-            if patientData["resources"] == None and patientData["type"] != "EM":
-                patientData["resources"] = "intake"
-            elif patientData["type"] == "EM":
-                patientData["resources"] = "EM"
-            patientData["resources_available"] = True  # TODO implement
+            patientData["replanned"] = False
+            patientData["resource"] = request.forms.get("resource")
+            if patientData["type"] == "EM":
+                patientData["resource"] = "em"
+            else:
+                patientData["resource"] = "intake"
+            patientData["resource_available"] = False
             patientData["complications"] = False
             patientData["phantom_pain"] = False
             patientData["id"] = add_patient(patientData)
         else:
             patientData = get_patient(patientData["id"])
+
+        if patientData["resource"] == "em" or patientData["replanned"] == True:
+            resource = get_resource(patientData["resource"])
+            if resource["current"] <= 0:
+                patientData["resource_available"] = False
+            else:
+                resource["current"] -= 1
+                set_resource(resource)
+                patientData["resource_available"] = True
+                patientData["resource"] = ""
+                set_patient(patientData)
 
         set_log(patientData, "patient_admission")
         return patientData
@@ -82,12 +93,13 @@ def patient_admission():
 def replan_patient():
     try:
         patientData = get_patient(request.forms.get("id"))
-        patientData["scheduled"] = "true"
+        patientData["replanned"] = True
         patientData["start_time"] = (
             CURRENT_TIME + 12 * 60
         )  # TODO add smart time decision here
-        # response = create_instance(patientData) # TODO implement new instance management
-        response = True
+        response = create_instance(
+            patientData
+        )  # TODO implement new instance management
         set_patient(patientData)
         set_log(patientData, "replan_patient")
         return response
@@ -100,11 +112,17 @@ def replan_patient():
 @post("/intake")
 def intake():
     try:
+        resource = get_resource("intake")
+        if resource["current"] <= 0:
+            raise ValueError("No intake resource available")
         patientData = get_patient(request.forms.get("id"))
         mean = request.forms.get("mean", INTAKE_TIME[0])
         sigma = request.forms.get("sigma", INTAKE_TIME[1])
         patientData["total_time"] += np.random.normal(mean, sigma)
+        set_patient(patientData)
         set_log(patientData, "intake")
+        resource["current"] += 1
+        set_resource(resource)
         return
     except Exception as e:
         set_log(patientData, "intake_error", e)
@@ -115,11 +133,17 @@ def intake():
 @post("/er_treatment")
 def er_treatmentr():
     try:
+        resource = get_resource("em")
+        if resource["current"] <= 0:
+            raise ValueError("No em resource available")
         patientData = get_patient(request.forms.get("id"))
         mean = request.forms.get("mean", EMERGENCY_TIME[0])
         sigma = request.forms.get("sigma", EMERGENCY_TIME[1])
         patientData["total_time"] += np.random.normal(mean, sigma)
         patientData["phantom_pain"] = evaluate_probability(PHANTOM_PAIN_PROBABILITY)
+        set_patient(patientData)
+        resource["current"] += 1
+        set_resource(resource)
         set_log(patientData, "er_treatment")
         return patientData
     except Exception as e:
@@ -131,10 +155,16 @@ def er_treatmentr():
 @post("/surgery")
 def surgery():
     try:
+        resource = get_resource("surgery")
+        if resource["current"] <= 0:
+            raise ValueError("No surgery resource available")
         patientData = get_patient(request.forms.get("id"))
         mean = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
         sigma = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
         patientData["total_time"] += np.random.normal(mean, sigma)
+        set_patient(patientData)
+        resource["current"] += 1
+        set_resource(resource)
         set_log(patientData, "surgery")
         return
     except Exception as e:
@@ -146,6 +176,9 @@ def surgery():
 @post("/nursing")
 def nursing():
     try:
+        resource = get_resource("nursing")
+        if resource["current"] <= 0:
+            raise ValueError("No nursing resource available")
         patientData = get_patient(request.forms.get("id"))
         mean = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
         sigma = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
@@ -153,6 +186,9 @@ def nursing():
         patientData["complications"] = evaluate_probability(
             COMPLICATION_PROBABILITY[get_diagnosis_type_index(patientData["diagnosis"])]
         )
+        set_patient(patientData)
+        resource["current"] += 1
+        set_resource(resource)
         set_log(patientData, "nursing")
         return
     except Exception as e:
@@ -194,9 +230,9 @@ def create_database():
             start_time REAL NOT NULL,
             total_time REAL NOT NULL,
             diagnosis TEXT,
-            scheduled TEXT,
-            resources TEXT,
-            resources_available TEXT,
+            replanned TEXT,
+            resource TEXT,
+            resource_available TEXT,
             complications TEXT,
             phantom_pain TEXT
         )
@@ -204,7 +240,7 @@ def create_database():
     )
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS resources(
+        CREATE TABLE IF NOT EXISTS resource(
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             current INTEGER NOT NULL,
@@ -235,7 +271,7 @@ def add_patient(patientData):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO patients(type, admission_time, start_time, total_time, diagnosis, scheduled, resources, resources_available, complications, phantom_pain)
+            INSERT INTO patients(type, admission_time, start_time, total_time, diagnosis, replanned, resource, resource_available, complications, phantom_pain)
             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
@@ -244,9 +280,9 @@ def add_patient(patientData):
                 patientData["start_time"],
                 patientData["total_time"],
                 patientData["diagnosis"],
-                patientData["scheduled"],
-                patientData["resources"],
-                patientData["resources_available"],
+                patientData["replanned"],
+                patientData["resource"],
+                patientData["resource_available"],
                 patientData["complications"],
                 patientData["phantom_pain"],
             ),
@@ -280,9 +316,9 @@ def get_patient(patientId):
         patientData["start_time"] = patient[3]
         patientData["total_time"] = patient[4]
         patientData["diagnosis"] = patient[5]
-        patientData["scheduled"] = patient[6]
-        patientData["resources"] = patient[7]
-        patientData["resources_available"] = patient[8]
+        patientData["replanned"] = patient[6]
+        patientData["resource"] = patient[7]
+        patientData["resource_available"] = patient[8]
         patientData["complications"] = patient[9]
         patientData["phantom_pain"] = patient[10]
         return patientData
@@ -299,7 +335,7 @@ def set_patient(patientData):
         cursor.execute(
             """
             UPDATE patients
-            SET type = ?, admission_time = ?, start_time =?, total_time =?, diagnosis = ?, scheduled = ?, resources = ?, resources_available = ?, complications = ?, phantom_pain = ?
+            SET type = ?, admission_time = ?, start_time =?, total_time =?, diagnosis = ?, replanned = ?, resource = ?, resource_available = ?, complications = ?, phantom_pain = ?
             WHERE id = ?
             """,
             (
@@ -308,9 +344,9 @@ def set_patient(patientData):
                 patientData["start_time"],
                 patientData["total_time"],
                 patientData["diagnosis"],
-                patientData["scheduled"],
-                patientData["resources"],
-                patientData["resources_available"],
+                patientData["replanned"],
+                patientData["resource"],
+                patientData["resource_available"],
                 patientData["complications"],
                 patientData["phantom_pain"],
                 patientData["id"],
@@ -331,7 +367,7 @@ def add_resource(resource):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT OR REPLACE INTO resources(name, current, max)
+            INSERT OR REPLACE INTO resource(name, current, max)
             VALUES(?, ?, ?)
             """,
             (
@@ -355,7 +391,7 @@ def get_resource(resource_name):
         cursor = connection.cursor()
         cursor.execute(
             """
-            SELECT * FROM resources
+            SELECT * FROM resource
             WHERE name = ?
             """,
             (resource_name,),
@@ -378,19 +414,20 @@ def set_resource(resourceData):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
-        cursor.execute(
-            """
-            UPDATE resources
-            SET name = ?, current = ?, max = ?
-            WHERE id = ?
-            """,
-            (
-                resourceData["name"],
-                resourceData["current"],
-                resourceData["max"],
-                resourceData["id"],
-            ),
-        )
+        if resourceData["current"] <= resourceData["max"]:
+            cursor.execute(
+                """
+                UPDATE resource
+                SET name = ?, current = ?, max = ?
+                WHERE id = ?
+                """,
+                (
+                    resourceData["name"],
+                    resourceData["current"],
+                    resourceData["max"],
+                    resourceData["id"],
+                ),
+            )
         connection.commit()
         connection.close()
         return
@@ -486,13 +523,9 @@ def create_instance(patientData, behavior="fork_running"):
 # creates tables if tables not there already
 create_database()
 
-# add resources to database
-for resource in RESOURCES:
+# add resource to database
+for resource in resource:
     add_resource(resource)
-
-# patient = {"type": "A"}
-# response = create_instance(patient)
-# print(response.text)
 
 # start the server with tcp6
 run(host="::1", port=23453)
