@@ -448,7 +448,7 @@ def get_log(patientId):
 
 def write_log_to_txt(patientId=None):
     try:
-        log = get_log(patientId)
+        log = str(get_log(patientId))
         with open(f"log-{patientId}.txt", "a") as file:
             file.write(log)
     except Exception as e:
