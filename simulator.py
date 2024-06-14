@@ -340,7 +340,7 @@ def set_patient(patientData):
         cursor.execute(
             """
             UPDATE patients
-            SET type = ?, admission_time = ?, start_time =?, total_time =?, diagnosis = ?, replanned = ?, resource = ?, resource_available = ?, complications = ?, phantom_pain = ?
+            SET type = ?, admission_time = ?, start_time =?, total_time =?, diagnosis = ?, replanned = ?, resource_available = ?, complications = ?, phantom_pain = ?
             WHERE id = ?
             """,
             (
@@ -350,7 +350,6 @@ def set_patient(patientData):
                 patientData["total_time"],
                 patientData["diagnosis"],
                 patientData["replanned"],
-                patientData["resource"],
                 patientData["resource_available"],
                 patientData["complications"],
                 patientData["phantom_pain"],
