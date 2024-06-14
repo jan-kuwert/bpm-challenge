@@ -181,6 +181,7 @@ def releasing():
 def get_patient_type_index(patientType):
     if patientType.startswith("EM") and patientType.split("-")[1].length() > 0:
         patientType = patientType.split("-")[1]
+    print("Patient Type: ", patientType, PATIENT_TYPES.index(patientType))
     return PATIENT_TYPES.index(patientType)
 
 
@@ -402,7 +403,7 @@ def set_resource(resourceData):
         return
 
 
-def set_log(patientData, task, error=''):
+def set_log(patientData, task, error=""):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
