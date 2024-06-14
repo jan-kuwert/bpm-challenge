@@ -404,7 +404,6 @@ def set_resource(resourceData):
 
 def set_log(patientData, task, error=''):
     try:
-
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
         cursor.execute(
@@ -412,7 +411,7 @@ def set_log(patientData, task, error=''):
             INSERT INTO logs(patientId, patientData, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
-            (patientData["id"], str(patientData), task, error),
+            (patientData["id"], str(patientData), task, str(error)),
         )
         connection.commit()
         connection.close()
