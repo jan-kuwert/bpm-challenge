@@ -135,8 +135,8 @@ def er_treatmentr():
 def surgery():
     try:
         patientData = get_patient(request.forms.get("id"))
-        mean = SURGERY_TIME[get_patient_type_index(patientData["type"])][0]
-        sigma = SURGERY_TIME[get_patient_type_index(patientData["type"])][1]
+        mean = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
+        sigma = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
         patientData["total_time"] += np.random.normal(mean, sigma)
         set_log(patientData, "surgery")
         return
@@ -150,11 +150,11 @@ def surgery():
 def nursing():
     try:
         patientData = get_patient(request.forms.get("id"))
-        mean = NURSING_TIME[get_patient_type_index(patientData["type"])][0]
-        sigma = NURSING_TIME[get_patient_type_index(patientData["type"])][1]
+        mean = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
+        sigma = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
         patientData["total_time"] += np.random.normal(mean, sigma)
         patientData["complications"] = evaluate_probability(
-            COMPLICATION_PROBABILITY[get_patient_type_index(patientData["type"])]
+            COMPLICATION_PROBABILITY[get_diagnosis_type_index(patientData["diagnosis"])]
         )
         set_log(patientData, "nursing")
         return
@@ -178,11 +178,11 @@ def releasing():
 
 
 # returns index of patient type from the given patient type array (returns 0 for EM-A1 patient since A1 = 0)
-def get_patient_type_index(patientType):
-    if patientType.startswith("EM") and patientType.split("-")[1].length() > 0:
-        patientType = patientType.split("-")[1]
-    print("Patient Type: ", patientType, PATIENT_TYPES.index(patientType))
-    return PATIENT_TYPES.index(patientType)
+def get_diagnosis_type_index(diagnosis):
+    if diagnosis.startswith("EM") and diagnosis.split("-")[1].length() > 0:
+        diagnosis = diagnosis.split("-")[1]
+    print("Patient Type: ", diagnosis, PATIENT_TYPES.index(diagnosis))
+    return PATIENT_TYPES.index(diagnosis)
 
 
 # init the database if not alreadt present
