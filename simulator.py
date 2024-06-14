@@ -406,12 +406,13 @@ def set_log(patientData, task, error=None):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
+        print(type(str(patientData["id"])), type(patientData["id"]))
         cursor.execute(
             """
             INSERT INTO logs(patientId, patientData, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
-            (int(patientData["id"]), patientData, task, error),
+            (str(patientData["id"]), patientData, task, error),
         )
         connection.commit()
         connection.close()
