@@ -469,7 +469,7 @@ def get_log(patient_id):
             cursor.execute(
                 """
                 SELECT * FROM logs
-                WHERE patientId = ?
+                WHERE patient_id = ?
                 """,
                 (patient_id,),
             )
