@@ -84,6 +84,7 @@ def patient_admission():
                 set_patient(patient_data)
 
         set_log(patient_data, "patient_admission")
+        print(patient_data["type"], patient_data["diagnosis"])
         return patient_data
     except Exception as e:
         set_log(patient_data, "patient_admission_error", e)
