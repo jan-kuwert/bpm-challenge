@@ -10,6 +10,7 @@ PROBABILITIES_A = [0.5, 0.25, 0.125, 0.125]
 PROBABILITIES_B = [0.5, 0.25, 0.125, 0.125]
 
 INSTANCE_TYPES = ["fork_running", "fork_ready", "wait_running", "wait_ready"]
+NUM_PATIENTS = 10
 
 
 # Function to simulate the arrival of a single patient
@@ -37,20 +38,21 @@ def generate_patient():
 # Function to simulate multiple patients
 def simulate_patients(num_patients):
     patients = []
-    for _ in range(num_patients):
+    for i, _ in range(num_patients):
         patient = generate_patient()
-        create_instance(patient)
-        patients.append(patient)
+        response = create_instance(patient)
+        patient["response"] = response
+        print(f"Patient {i+1}: {patient}")
     return patients
 
 
 # creates new process instance
-def create_instance(patientData, behavior="fork_running"):
+def create_instance(patient_data, behavior="fork_running"):
     try:
-        if not patientData["type"]:
-            raise ValueError("Patient type invalid: " + patientData["type"])
-        if not patientData["diagnosis"]:
-            raise ValueError("Patient diagnosis invalid: " + patientData["diagnosis"])
+        if not patient_data["type"]:
+            raise ValueError("Patient type invalid: " + patient_data["type"])
+        if not patient_data["diagnosis"]:
+            raise ValueError("Patient diagnosis invalid: " + patient_data["diagnosis"])
         if behavior not in INSTANCE_TYPES:
             raise ValueError("Instance Type invalid:" + behavior)
         url = "https://cpee.org/flow/start/url/"
@@ -59,9 +61,9 @@ def create_instance(patientData, behavior="fork_running"):
             "behavior": behavior,
             "url": xml_url,
             "init": '{"type": "'
-            + patientData["type"]
+            + patient_data["type"]
             + '", "diagnosis": "'
-            + patientData["diagnosis"]
+            + patient_data["diagnosis"]
             + '"}',
         }
 
@@ -72,15 +74,10 @@ def create_instance(patientData, behavior="fork_running"):
         # instanceData["id"] = response.forms.get("CPEE-INSTANCE-UUID")
         # instanceData["beahvior"] = response.forms.get("CPEE-BEHAVIOR")
         # print("Instance Data:", instanceData)
-        print("Response:", response)
         return response
     except Exception as e:
         print("create_instance_error: ", e)
         return e
 
 
-num_patients_to_simulate = 10
-simulated_patients = simulate_patients(num_patients_to_simulate)
-
-for i, patient in enumerate(simulated_patients):
-    print(f"Patient {i+1}: {patient}")
+simulated_patients = simulate_patients(NUM_PATIENTS)

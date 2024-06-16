@@ -100,7 +100,7 @@ def replan_patient():
         )  # TODO add smart time decision here
         response = create_instance(
             patient_data
-        )  # TODO implement new instance management
+        ) 
 
         set_patient(patient_data)
         set_log(patient_data, "replan_patient")
@@ -192,7 +192,9 @@ def nursing():
         sigma = NURSING_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][1]
         patient_data["total_time"] += np.random.normal(mean, sigma)
         patient_data["complications"] = evaluate_probability(
-            COMPLICATION_PROBABILITY[get_diagnosis_type_index(patient_data["diagnosis"])]
+            COMPLICATION_PROBABILITY[
+                get_diagnosis_type_index(patient_data["diagnosis"])
+            ]
         )
         resource["current"] += 1
 
@@ -512,15 +514,17 @@ def create_instance(patient_data, behavior="fork_running"):
             raise ValueError("Instance Type invalid:" + behavior)
         url = "https://cpee.org/flow/start/url/"
         xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
-        data = {"behavior": behavior, "url": xml_url, "init": patient_data}
+        data = {
+            "behavior": behavior,
+            "url": xml_url,
+            "init": '{"type": "'
+            + patient_data["type"]
+            + '", "diagnosis": "'
+            + patient_data["diagnosis"]
+            + '"}',
+        }
 
         response = requests.post(url, data=data)
-        instanceData = {}
-        instanceData["instance"] = response.forms.get("CPEE-INSTANCE")
-        instanceData["url"] = response.fomrms.get("CPEE-INSTANCE-URL")
-        instanceData["id"] = response.forms.get("CPEE-INSTANCE-UUID")
-        instanceData["beahvior"] = response.forms.get("CPEE-BEHAVIOR")
-        print("Instance Data:", instanceData)
         return response
     except Exception as e:
         print("create_instance_error: ", e)
