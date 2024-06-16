@@ -54,8 +54,16 @@ def create_instance(patientData, behavior="fork_running"):
         if behavior not in INSTANCE_TYPES:
             raise ValueError("Instance Type invalid:" + behavior)
         url = "https://cpee.org/flow/start/url/"
-        xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/Main.xml"
-        data = {"behavior": behavior, "url": xml_url, "init": patientData}
+        xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
+        data = {
+            "behavior": behavior,
+            "url": xml_url,
+            "init": '{"type": "'
+            + patientData["type"]
+            + '", "diagnosis": "'
+            + patientData["diagnosis"]
+            + '"}',
+        }
 
         response = requests.post(url, data=data)
         # instanceData = {}
@@ -71,7 +79,7 @@ def create_instance(patientData, behavior="fork_running"):
         return e
 
 
-num_patients_to_simulate = 1
+num_patients_to_simulate = 10
 simulated_patients = simulate_patients(num_patients_to_simulate)
 
 for i, patient in enumerate(simulated_patients):

@@ -66,7 +66,7 @@ def patient_admission():
             patientData = get_patient(patientData["id"])
 
         if patientData["type"] == "EM" or patientData["replanned"] == True:
-            if patientData['type'] == "EM":
+            if patientData["type"] == "EM":
                 patientData["resource"] = "em"
             else:
                 patientData["resource"] = "intake"
@@ -416,6 +416,7 @@ def get_resource(resource_name):
 # update resource in the db
 def set_resource(resourceData):
     try:
+        print("resourceData: ", resourceData)
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
         if resourceData["current"] <= resourceData["max"]:
@@ -484,7 +485,8 @@ def get_log(patientId):
         print("get_log_error: ", e)
         return
 
-# write whole log or log of a single patient to a txt file  
+
+# write whole log or log of a single patient to a txt file
 def write_log_to_txt(patientId=None):
     try:
         log = str(get_log(patientId))
