@@ -45,47 +45,47 @@ PHANTOM_PAIN_PROBABILITY = 0.01
 @post("/patient_admission")
 def patient_admission():
     try:
-        patientData = {}
-        patientData["id"] = request.forms.get("id")
-        if not patientData["id"]:
-            patientData["type"] = request.forms.get("type")
-            patientData["admission_time"] = request.forms.get("admission_time")
-            if not patientData["admission_time"]:
-                patientData["admission_time"] = datetime.now().strftime(
+        patient_data = {}
+        patient_data["id"] = request.forms.get("id")
+        if not patient_data["id"]:
+            patient_data["type"] = request.forms.get("type")
+            patient_data["admission_time"] = request.forms.get("admission_time")
+            if not patient_data["admission_time"]:
+                patient_data["admission_time"] = datetime.now().strftime(
                     "%m/%d/%Y, %H:%M:%S"
                 )
-            patientData["start_time"] = CURRENT_TIME
-            patientData["total_time"] = 0  # tracks time spent in hospital
-            patientData["diagnosis"] = request.forms.get("diagnosis")
-            patientData["replanned"] = False
-            patientData["resource_available"] = False
-            patientData["complications"] = False
-            patientData["phantom_pain"] = False
-            patientData["id"] = add_patient(patientData)
+            patient_data["start_time"] = CURRENT_TIME
+            patient_data["total_time"] = 0  # tracks time spent in hospital
+            patient_data["diagnosis"] = request.forms.get("diagnosis")
+            patient_data["replanned"] = False
+            patient_data["resource_available"] = False
+            patient_data["complications"] = False
+            patient_data["phantom_pain"] = False
+            patient_data["id"] = add_patient(patient_data)
         else:
-            patientData = get_patient(patientData["id"])
+            patient_data = get_patient(patient_data["id"])
 
-        if patientData["type"] == "EM" or patientData["replanned"] == True:
-            if patientData["type"] == "EM":
-                patientData["resource"] = "em"
+        if patient_data["type"] == "EM" or patient_data["replanned"] == True:
+            if patient_data["type"] == "EM":
+                patient_data["resource"] = "em"
             else:
-                patientData["resource"] = "intake"
+                patient_data["resource"] = "intake"
 
-            resource = get_resource(patientData["resource"])
+            resource = get_resource(patient_data["resource"])
             if resource["current"] <= 0:
-                patientData["resource_available"] = False
+                patient_data["resource_available"] = False
             else:
                 resource["current"] -= 1
-                patientData["resource_available"] = True
-                patientData["resource"] = ""
+                patient_data["resource_available"] = True
+                patient_data["resource"] = ""
 
                 set_resource(resource)
-                set_patient(patientData)
+                set_patient(patient_data)
 
-        set_log(patientData, "patient_admission")
-        return patientData
+        set_log(patient_data, "patient_admission")
+        return patient_data
     except Exception as e:
-        set_log(patientData, "patient_admission_error", e)
+        set_log(patient_data, "patient_admission_error", e)
         print("patient_admission_error: ", e)
         return e
 
@@ -93,20 +93,20 @@ def patient_admission():
 @post("/replan_patient")
 def replan_patient():
     try:
-        patientData = get_patient(request.forms.get("id"))
-        patientData["replanned"] = True
-        patientData["start_time"] = (
+        patient_data = get_patient(request.forms.get("id"))
+        patient_data["replanned"] = True
+        patient_data["start_time"] = (
             CURRENT_TIME + 12 * 60
         )  # TODO add smart time decision here
         response = create_instance(
-            patientData
+            patient_data
         )  # TODO implement new instance management
 
-        set_patient(patientData)
-        set_log(patientData, "replan_patient")
+        set_patient(patient_data)
+        set_log(patient_data, "replan_patient")
         return response
     except Exception as e:
-        set_log(patientData, "replan_patient_error", e)
+        set_log(patient_data, "replan_patient_error", e)
         print("replan_patient_error: ", e)
         return e
 
@@ -117,18 +117,18 @@ def intake():
         resource = get_resource("intake")
         if resource["current"] <= 0:
             raise ValueError("No intake resource available")
-        patientData = get_patient(request.forms.get("id"))
+        patient_data = get_patient(request.forms.get("id"))
         mean = request.forms.get("mean", INTAKE_TIME[0])
         sigma = request.forms.get("sigma", INTAKE_TIME[1])
-        patientData["total_time"] += np.random.normal(mean, sigma)
+        patient_data["total_time"] += np.random.normal(mean, sigma)
         resource["current"] += 1
 
-        set_patient(patientData)
+        set_patient(patient_data)
         set_resource(resource)
-        set_log(patientData, "intake")
+        set_log(patient_data, "intake")
         return
     except Exception as e:
-        set_log(patientData, "intake_error", e)
+        set_log(patient_data, "intake_error", e)
         print("intake_error: ", e)
         return e
 
@@ -139,19 +139,19 @@ def er_treatmentr():
         resource = get_resource("em")
         if resource["current"] <= 0:
             raise ValueError("No em resource available")
-        patientData = get_patient(request.forms.get("id"))
+        patient_data = get_patient(request.forms.get("id"))
         mean = request.forms.get("mean", EMERGENCY_TIME[0])
         sigma = request.forms.get("sigma", EMERGENCY_TIME[1])
-        patientData["total_time"] += np.random.normal(mean, sigma)
-        patientData["phantom_pain"] = evaluate_probability(PHANTOM_PAIN_PROBABILITY)
+        patient_data["total_time"] += np.random.normal(mean, sigma)
+        patient_data["phantom_pain"] = evaluate_probability(PHANTOM_PAIN_PROBABILITY)
         resource["current"] += 1
 
-        set_patient(patientData)
+        set_patient(patient_data)
         set_resource(resource)
-        set_log(patientData, "er_treatment")
-        return patientData
+        set_log(patient_data, "er_treatment")
+        return patient_data
     except Exception as e:
-        set_log(patientData, "er_treatment_error", e)
+        set_log(patient_data, "er_treatment_error", e)
         print("er_treatment_error: ", e)
         return e
 
@@ -162,18 +162,18 @@ def surgery():
         resource = get_resource("surgery")
         if resource["current"] <= 0:
             raise ValueError("No surgery resource available")
-        patientData = get_patient(request.forms.get("id"))
-        mean = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
-        sigma = SURGERY_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
-        patientData["total_time"] += np.random.normal(mean, sigma)
+        patient_data = get_patient(request.forms.get("id"))
+        mean = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][0]
+        sigma = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][1]
+        patient_data["total_time"] += np.random.normal(mean, sigma)
         resource["current"] += 1
 
-        set_patient(patientData)
+        set_patient(patient_data)
         set_resource(resource)
-        set_log(patientData, "surgery")
+        set_log(patient_data, "surgery")
         return
     except Exception as e:
-        set_log(patientData, "surgery_error", e)
+        set_log(patient_data, "surgery_error", e)
         print("surgery_error: ", e)
         return e
 
@@ -181,27 +181,27 @@ def surgery():
 @post("/nursing")
 def nursing():
     try:
-        patientData = get_patient(request.forms.get("id"))
-        if "A" in patientData["diagnosis"]:
+        patient_data = get_patient(request.forms.get("id"))
+        if "A" in patient_data["diagnosis"]:
             resource = get_resource("nursing_a")
-        elif "B" in patientData["diagnosis"]:
+        elif "B" in patient_data["diagnosis"]:
             resource = get_resource("nursing_b")
         if resource["current"] <= 0:
             raise ValueError("No nursing resource available")
-        mean = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][0]
-        sigma = NURSING_TIME[get_diagnosis_type_index(patientData["diagnosis"])][1]
-        patientData["total_time"] += np.random.normal(mean, sigma)
-        patientData["complications"] = evaluate_probability(
-            COMPLICATION_PROBABILITY[get_diagnosis_type_index(patientData["diagnosis"])]
+        mean = NURSING_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][0]
+        sigma = NURSING_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][1]
+        patient_data["total_time"] += np.random.normal(mean, sigma)
+        patient_data["complications"] = evaluate_probability(
+            COMPLICATION_PROBABILITY[get_diagnosis_type_index(patient_data["diagnosis"])]
         )
         resource["current"] += 1
 
-        set_patient(patientData)
+        set_patient(patient_data)
         set_resource(resource)
-        set_log(patientData, "nursing")
+        set_log(patient_data, "nursing")
         return
     except Exception as e:
-        set_log(patientData, "nursing_error", e)
+        set_log(patient_data, "nursing_error", e)
         print("nursing_error: ", e)
         return e
 
@@ -209,13 +209,13 @@ def nursing():
 @post("/releasing")
 def releasing():
     try:
-        patientData = get_patient(request.forms.get("id"))
+        patient_data = get_patient(request.forms.get("id"))
 
-        set_log(patientData, "releasing")
-        write_log_to_txt(patientData["id"])
+        set_log(patient_data, "releasing")
+        write_log_to_txt(patient_data["id"])
         return
     except Exception as e:
-        set_log(patientData, "releasing_error", e)
+        set_log(patient_data, "releasing_error", e)
         print("releasing_error: ", e)
         return e
 
@@ -262,7 +262,7 @@ def create_database():
         CREATE TABLE IF NOT EXISTS logs(
             id INTEGER PRIMARY KEY,
             patientId INTEGER NOT NULL,
-            patientData TEXT NOT NULL,
+            patient_data TEXT NOT NULL,
             tasks TEXT NOT NULL,
             error TEXT
         )
@@ -274,7 +274,7 @@ def create_database():
 
 
 # adds new patient to database and returns id
-def add_patient(patientData):
+def add_patient(patient_data):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
@@ -284,15 +284,15 @@ def add_patient(patientData):
             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                patientData["type"],
-                patientData["admission_time"],
-                patientData["start_time"],
-                patientData["total_time"],
-                patientData["diagnosis"],
-                patientData["replanned"],
-                patientData["resource_available"],
-                patientData["complications"],
-                patientData["phantom_pain"],
+                patient_data["type"],
+                patient_data["admission_time"],
+                patient_data["start_time"],
+                patient_data["total_time"],
+                patient_data["diagnosis"],
+                patient_data["replanned"],
+                patient_data["resource_available"],
+                patient_data["complications"],
+                patient_data["phantom_pain"],
             ),
         )
         connection.commit()
@@ -304,7 +304,7 @@ def add_patient(patientData):
 
 
 # returns patient data from database
-def get_patient(patientId):
+def get_patient(patient_id):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
@@ -313,29 +313,29 @@ def get_patient(patientId):
             SELECT * FROM patients
             WHERE id = ?
             """,
-            (patientId,),
+            (patient_id,),
         )
         patient = cursor.fetchone()
         connection.close()
-        patientData = {}
-        patientData["id"] = patient[0]
-        patientData["type"] = patient[1]
-        patientData["admission_time"] = patient[2]
-        patientData["start_time"] = patient[3]
-        patientData["total_time"] = patient[4]
-        patientData["diagnosis"] = patient[5]
-        patientData["replanned"] = patient[6]
-        patientData["resource_available"] = patient[7]
-        patientData["complications"] = patient[8]
-        patientData["phantom_pain"] = patient[9]
-        return patientData
+        patient_data = {}
+        patient_data["id"] = patient[0]
+        patient_data["type"] = patient[1]
+        patient_data["admission_time"] = patient[2]
+        patient_data["start_time"] = patient[3]
+        patient_data["total_time"] = patient[4]
+        patient_data["diagnosis"] = patient[5]
+        patient_data["replanned"] = patient[6]
+        patient_data["resource_available"] = patient[7]
+        patient_data["complications"] = patient[8]
+        patient_data["phantom_pain"] = patient[9]
+        return patient_data
     except Exception as e:
         print("get_patient_error: ", e)
         return
 
 
 # updates patient data in database
-def set_patient(patientData):
+def set_patient(patient_data):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
@@ -346,16 +346,16 @@ def set_patient(patientData):
             WHERE id = ?
             """,
             (
-                patientData["type"],
-                patientData["admission_time"],
-                patientData["start_time"],
-                patientData["total_time"],
-                patientData["diagnosis"],
-                patientData["replanned"],
-                patientData["resource_available"],
-                patientData["complications"],
-                patientData["phantom_pain"],
-                patientData["id"],
+                patient_data["type"],
+                patient_data["admission_time"],
+                patient_data["start_time"],
+                patient_data["total_time"],
+                patient_data["diagnosis"],
+                patient_data["replanned"],
+                patient_data["resource_available"],
+                patient_data["complications"],
+                patient_data["phantom_pain"],
+                patient_data["id"],
             ),
         )
         connection.commit()
@@ -391,7 +391,7 @@ def add_resource(resource):
 
 
 # returns resource from the database
-def get_resource(resourceName):
+def get_resource(resource_name):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
@@ -400,7 +400,7 @@ def get_resource(resourceName):
             SELECT * FROM resource
             WHERE name = ?
             """,
-            (resourceName,),
+            (resource_name,),
         )
         resource = cursor.fetchone()
         connection.close()
@@ -416,12 +416,11 @@ def get_resource(resourceName):
 
 
 # update resource in the db
-def set_resource(resourceData):
+def set_resource(resource_data):
     try:
-        print("resourceData: ", resourceData)
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
-        if resourceData["current"] <= resourceData["max"]:
+        if resource_data["current"] <= resource_data["max"]:
             cursor.execute(
                 """
                 UPDATE resource
@@ -429,10 +428,10 @@ def set_resource(resourceData):
                 WHERE id = ?
                 """,
                 (
-                    resourceData["name"],
-                    resourceData["current"],
-                    resourceData["max"],
-                    resourceData["id"],
+                    resource_data["name"],
+                    resource_data["current"],
+                    resource_data["max"],
+                    resource_data["id"],
                 ),
             )
         connection.commit()
@@ -443,16 +442,16 @@ def set_resource(resourceData):
         return
 
 
-def set_log(patientData, task, error=""):
+def set_log(patient_data, task, error=""):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO logs(patientId, patientData, tasks, error)
+            INSERT INTO logs(patientId, patient_data, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
-            (patientData["id"], str(patientData), task, str(error)),
+            (patient_data["id"], str(patient_data), task, str(error)),
         )
         connection.commit()
         connection.close()
@@ -462,17 +461,17 @@ def set_log(patientData, task, error=""):
     return
 
 
-def get_log(patientId):
+def get_log(patient_id):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
-        if patientId:
+        if patient_id:
             cursor.execute(
                 """
                 SELECT * FROM logs
                 WHERE patientId = ?
                 """,
-                (patientId,),
+                (patient_id,),
             )
         else:
             cursor.execute(
@@ -489,10 +488,10 @@ def get_log(patientId):
 
 
 # write whole log or log of a single patient to a txt file
-def write_log_to_txt(patientId=None):
+def write_log_to_txt(patient_id=None):
     try:
-        log = str(get_log(patientId))
-        with open(f"log-{patientId}.txt", "w") as file:
+        log = str(get_log(patient_id))
+        with open(f"log-{patient_id}.txt", "w") as file:
             file.write(log)
     except Exception as e:
         print("write_log_to_txt_error: ", e)
@@ -505,15 +504,15 @@ def evaluate_probability(probability):
 
 
 # creates new process instance
-def create_instance(patientData, behavior="fork_running"):
+def create_instance(patient_data, behavior="fork_running"):
     try:
-        if not patientData["type"] or patientData["type"] not in PATIENT_TYPES:
-            raise ValueError("Patient Type invalid: " + patientData["type"])
+        if not patient_data["type"] or patient_data["type"] not in PATIENT_TYPES:
+            raise ValueError("Patient Type invalid: " + patient_data["type"])
         if behavior not in INSTANCE_TYPES:
             raise ValueError("Instance Type invalid:" + behavior)
         url = "https://cpee.org/flow/start/url/"
         xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
-        data = {"behavior": behavior, "url": xml_url, "init": patientData}
+        data = {"behavior": behavior, "url": xml_url, "init": patient_data}
 
         response = requests.post(url, data=data)
         instanceData = {}
