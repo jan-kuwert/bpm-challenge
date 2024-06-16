@@ -261,7 +261,7 @@ def create_database():
         """
         CREATE TABLE IF NOT EXISTS logs(
             id INTEGER PRIMARY KEY,
-            patientId INTEGER NOT NULL,
+            patient_id INTEGER NOT NULL,
             patient_data TEXT NOT NULL,
             tasks TEXT NOT NULL,
             error TEXT
@@ -448,7 +448,7 @@ def set_log(patient_data, task, error=""):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO logs(patientId, patient_data, tasks, error)
+            INSERT INTO logs(patient_id, patient_data, tasks, error)
             VALUES(?, ?, ?, ?)
             """,
             (patient_data["id"], str(patient_data), task, str(error)),
