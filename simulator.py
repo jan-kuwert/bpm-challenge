@@ -520,7 +520,7 @@ def create_instance(patient_data, behavior="fork_running"):
             + '", "diagnosis": "'
             + patient_data["diagnosis"]
             + '", "id": "'
-            + patient_data["id"]
+            + str(patient_data["id"])
             + '"}',
         }
 
