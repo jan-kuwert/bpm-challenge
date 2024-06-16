@@ -4,7 +4,6 @@ import sqlite3
 import requests
 import numpy as np
 from enum import Enum, auto
-from datetime import datetime
 from pyprobs import Probability as pr
 from bottle import run, request, post
 
@@ -51,12 +50,14 @@ def patient_admission():
             patient_data["type"] = request.forms.get("type")
             patient_data["admission_time"] = request.forms.get("admission_time")
             if not patient_data["admission_time"]:
-                patient_data["admission_time"] = datetime.now().strftime(
-                    "%m/%d/%Y, %H:%M:%S"
-                )
+                patient_data["admission_time"] = CURRENT_TIME
             patient_data["start_time"] = CURRENT_TIME
             patient_data["total_time"] = 0  # tracks time spent in hospital
             patient_data["diagnosis"] = request.forms.get("diagnosis")
+            if not patient_data["diagnosis"]:
+                tuple = patient_data["type"].replace(" ", "").split("-")
+                patient_data["type"] = tuple[0]
+                patient_data["diagnosis"] = tuple[1]
             patient_data["replanned"] = "false"
             patient_data["resource_available"] = "false"
             patient_data["complications"] = "false"
@@ -98,9 +99,7 @@ def replan_patient():
         patient_data["start_time"] = (
             CURRENT_TIME + 12 * 60
         )  # TODO add smart time decision here
-        response = create_instance(
-            patient_data
-        ) 
+        response = create_instance(patient_data)
 
         set_patient(patient_data)
         set_log(patient_data, "replan_patient")
@@ -163,6 +162,7 @@ def surgery():
         if resource["current"] <= 0:
             raise ValueError("No surgery resource available")
         patient_data = get_patient(request.forms.get("id"))
+        print("surgery: ",patient_data["diagnosis"])
         mean = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][0]
         sigma = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][1]
         patient_data["total_time"] += np.random.normal(mean, sigma)
@@ -224,8 +224,6 @@ def releasing():
 
 # returns index of patient type from the given patient type array (returns 0 for EM-A1 patient since A1 = 0)
 def get_diagnosis_type_index(diagnosis):
-    if diagnosis.startswith("EM") and diagnosis.split("-")[1].length() > 0:
-        diagnosis = diagnosis.split("-")[1]
     return DIAGNOSIS_TYPES.index(diagnosis)
 
 
