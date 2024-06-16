@@ -6,10 +6,10 @@ import numpy as np
 from enum import Enum, auto
 from datetime import datetime
 from pyprobs import Probability as pr
-from bottle import run, request, post, get, put, delete
+from bottle import run, request, post
 
 # for now in here
-resource = [
+resources = [
     {"name": "intake", "current": 4, "max": 4},
     {"name": "surgery", "current": 5, "max": 5},
     {"name": "nursing_a", "current": 30, "max": 30},
@@ -484,7 +484,7 @@ def get_log(patientId):
         print("get_log_error: ", e)
         return
 
-
+# write whole log or log of a single patient to a txt file  
 def write_log_to_txt(patientId=None):
     try:
         log = str(get_log(patientId))
@@ -528,7 +528,7 @@ def create_instance(patientData, behavior="fork_running"):
 create_database()
 
 # add resource to database
-for resource in resource:
+for resource in resources:
     add_resource(resource)
 
 # start the server with tcp6
