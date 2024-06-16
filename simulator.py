@@ -57,15 +57,15 @@ def patient_admission():
             patient_data["start_time"] = CURRENT_TIME
             patient_data["total_time"] = 0  # tracks time spent in hospital
             patient_data["diagnosis"] = request.forms.get("diagnosis")
-            patient_data["replanned"] = False
-            patient_data["resource_available"] = False
-            patient_data["complications"] = False
-            patient_data["phantom_pain"] = False
+            patient_data["replanned"] = "false"
+            patient_data["resource_available"] = "false"
+            patient_data["complications"] = "false"
+            patient_data["phantom_pain"] = "false"
             patient_data["id"] = add_patient(patient_data)
         else:
             patient_data = get_patient(patient_data["id"])
 
-        if patient_data["type"] == "EM" or patient_data["replanned"] == True:
+        if patient_data["type"] == "EM" or patient_data["replanned"] == "true":
             if patient_data["type"] == "EM":
                 patient_data["resource"] = "em"
             else:
@@ -73,10 +73,10 @@ def patient_admission():
 
             resource = get_resource(patient_data["resource"])
             if resource["current"] <= 0:
-                patient_data["resource_available"] = False
+                patient_data["resource_available"] = "false"
             else:
                 resource["current"] -= 1
-                patient_data["resource_available"] = True
+                patient_data["resource_available"] = "true"
                 patient_data["resource"] = ""
 
                 set_resource(resource)
@@ -94,7 +94,7 @@ def patient_admission():
 def replan_patient():
     try:
         patient_data = get_patient(request.forms.get("id"))
-        patient_data["replanned"] = True
+        patient_data["replanned"] = "true"
         patient_data["start_time"] = (
             CURRENT_TIME + 12 * 60
         )  # TODO add smart time decision here

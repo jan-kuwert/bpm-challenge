@@ -38,7 +38,7 @@ def generate_patient():
 # Function to simulate multiple patients
 def simulate_patients(num_patients):
     patients = []
-    for i, _ in range(num_patients):
+    for i in range(num_patients):
         patient = generate_patient()
         response = create_instance(patient)
         patient["response"] = response
