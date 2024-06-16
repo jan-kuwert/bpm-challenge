@@ -70,6 +70,8 @@ def patient_admission():
                 patientData["resource"] = "em"
             else:
                 patientData["resource"] = "intake"
+
+            resource = get_resource(patientData["resource"])
             if resource["current"] <= 0:
                 patientData["resource_available"] = False
             else:
@@ -389,7 +391,7 @@ def add_resource(resource):
 
 
 # returns resource from the database
-def get_resource(resource_name):
+def get_resource(resourceName):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
@@ -398,7 +400,7 @@ def get_resource(resource_name):
             SELECT * FROM resource
             WHERE name = ?
             """,
-            (resource_name,),
+            (resourceName,),
         )
         resource = cursor.fetchone()
         connection.close()
