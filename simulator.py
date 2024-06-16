@@ -84,7 +84,6 @@ def patient_admission():
                 set_patient(patient_data)
 
         set_log(patient_data, "patient_admission")
-        print( patient_data['id'],patient_data["type"], patient_data["diagnosis"])
         return patient_data
     except Exception as e:
         set_log(patient_data, "patient_admission_error", e)
@@ -163,7 +162,7 @@ def surgery():
         if resource["current"] <= 0:
             raise ValueError("No surgery resource available")
         patient_data = get_patient(request.forms.get("id"))
-        print("surgery: ", patient_data["diagnosis"])
+
         mean = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][0]
         sigma = SURGERY_TIME[get_diagnosis_type_index(patient_data["diagnosis"])][1]
         patient_data["total_time"] += np.random.normal(mean, sigma)
