@@ -82,7 +82,7 @@ def patient_admission():
 
                 set_resource(resource)
                 set_patient(patient_data)
-        print("patient_admission: ", patient_data)
+
         set_log(patient_data, "patient_admission")
         return patient_data
     except Exception as e:
@@ -519,6 +519,8 @@ def create_instance(patient_data, behavior="fork_running"):
             + patient_data["type"]
             + '", "diagnosis": "'
             + patient_data["diagnosis"]
+            + '", "id": "'
+            + patient_data["id"]
             + '"}',
         }
 
