@@ -82,7 +82,7 @@ def patient_admission():
 
                 set_resource(resource)
                 set_patient(patient_data)
-
+            print("patient_admission: ", resource, patient_data[resource])
         set_log(patient_data, "patient_admission")
         return patient_data
     except Exception as e:
