@@ -56,7 +56,7 @@ def create_instance(patient_data, behavior="fork_running"):
         if behavior not in INSTANCE_TYPES:
             raise ValueError("Instance Type invalid:" + behavior)
         url = "https://cpee.org/flow/start/url/"
-        xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
+        xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/Main.xml"
         data = {
             "behavior": behavior,
             "url": xml_url,
