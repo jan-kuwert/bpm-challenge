@@ -17,7 +17,6 @@ def handle_task_async():
     try:
         # Get the callback url from the request
         callback_url = request.headers["CPEE-CALLBACK"]
-        print(request.data, request.body)
         data = request.body.read()
         print("data: ", data)
         # start the task execution
