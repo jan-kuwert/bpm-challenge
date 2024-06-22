@@ -19,7 +19,7 @@ def handle_task_async():
         callback_url = request.headers["CPEE-CALLBACK"]
         print(request)
         data = request.body.read()
-
+        print("data: ", data)
         # start the task execution
         executor.submit(task, data, callback_url)
 
