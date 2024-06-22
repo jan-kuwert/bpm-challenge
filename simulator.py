@@ -4,7 +4,7 @@ import requests
 import numpy as np
 from enum import Enum, auto
 from pyprobs import Probability as pr
-from bottle import run, request, post
+import bottle
 from concurrent.futures import ThreadPoolExecutor
 import time
 
@@ -13,12 +13,12 @@ INSTANCE_TYPES = ["fork_running", "fork_ready", "wait_running", "wait_ready"]
 executor = ThreadPoolExecutor(max_workers=1)
 
 
-@post("/task")
+@get("/task")
 def handle_task():
     try:
         callback_url = bottle.request.headers["CPEE-CALLBACK"]
         print(f"CallBack-ID: {callback_url}")
-        task_object = request.forms.get()
+        task_object = bottle.request.forms.get()
 
         executor.submit(task, callback_url)
 
