@@ -20,9 +20,9 @@ def handle_task():
         print(f"CallBack-ID: {callback_url}")
         task_object = request.forms.get()
 
-        executor.submit(background_task, callback_url)
+        executor.submit(task, callback_url)
 
-        print("task_object",task_object)
+        print("task_object", task_object)
 
         # Immediate response indicating the request is accepted for async processing
         return bottle.HTTPResponse(
@@ -35,11 +35,25 @@ def handle_task():
         return e
 
 
-def background_task(callback_url):
-    print ("Background processing started")
+def task(callback_url):
+    print("Background processing started")
     time.sleep(20)
     print("Background processing completed after 20 seconds")
-    return
+
+
+def callback(callback_url):
+    callback_response = {
+        "task_id": "task_id",
+        "status": "completed",
+        "result": {"success": True},
+    }
+
+    # Prepare the headers
+    headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
+
+    # Send the callback response as a JSON payload
+    requests.put(callback_url, headers=headers, json=callback_response)
+
 
 def create_database():
     connection = sqlite3.connect("hospital.db")
