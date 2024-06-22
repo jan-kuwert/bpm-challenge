@@ -2,9 +2,8 @@ import json
 import sqlite3
 import requests
 import numpy as np
-from enum import Enum, auto
 from pyprobs import Probability as pr
-from bottle import get, request, run
+from bottle import get, request, run, HTTPResponse
 from concurrent.futures import ThreadPoolExecutor
 import time
 
@@ -14,18 +13,18 @@ executor = ThreadPoolExecutor(max_workers=1)
 
 
 @get("/task")
-def handle_task():
+def handle_task_async():
     try:
         callback_url = request.headers["CPEE-CALLBACK"]
         print(f"CallBack-ID: {callback_url}")
-        task_object = request.forms.get()
+        # task_object = request.forms.get()
 
         executor.submit(task, callback_url)
 
-        print("task_object", task_object)
+        # print("task_object", task_object)
 
         # Immediate response indicating the request is accepted for async processing
-        return bottle.HTTPResponse(
+        return HTTPResponse(
             json.dumps({"Ack.:": "Response later"}),
             status=202,
             headers={"content-type": "application/json", "CPEE-CALLBACK": "true"},
