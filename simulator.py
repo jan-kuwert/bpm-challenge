@@ -39,6 +39,7 @@ def task(callback_url):
     print("Background processing started")
     time.sleep(20)
     print("Background processing completed after 20 seconds")
+    callback(callback_url)
 
 
 def callback(callback_url):
