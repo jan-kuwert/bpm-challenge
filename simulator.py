@@ -17,7 +17,7 @@ def handle_task_async():
     try:
         # Get the callback url from the request
         callback_url = request.headers["CPEE-CALLBACK"]
-        data = request.forms.allitmes()
+        data = request.forms.get('id')
         print("data: ", data)
         # start the task execution
         executor.submit(task, data, callback_url)
