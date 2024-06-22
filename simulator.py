@@ -15,13 +15,13 @@ executor = ThreadPoolExecutor(max_workers=1)
 @get("/task")
 def handle_task_async():
     try:
+        # Get the callback url from the request
         callback_url = request.headers["CPEE-CALLBACK"]
-        print(f"CallBack-ID: {callback_url}")
-        # task_object = request.forms.get()
+        print(request)
+        data = request.body.read()
 
-        executor.submit(task, callback_url)
-
-        # print("task_object", task_object)
+        # start the task execution
+        executor.submit(task, data, callback_url)
 
         # Immediate response indicating the request is accepted for async processing
         return HTTPResponse(
@@ -34,10 +34,11 @@ def handle_task_async():
         return e
 
 
-def task(callback_url):
-    print("Background processing started")
-    time.sleep(20)
-    print("Background processing completed after 20 seconds")
+def task(data, callback_url):
+    try:
+        print("task started")
+    except Exception as e:
+        print("task_error: ", e)
     callback(callback_url)
 
 
@@ -51,7 +52,7 @@ def callback(callback_url):
     # Prepare the headers
     headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
-    # Send the callback response as a JSON payload
+    # Send the callback response
     requests.put(callback_url, headers=headers, json=callback_response)
 
 
