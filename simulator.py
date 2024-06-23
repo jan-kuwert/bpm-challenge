@@ -122,7 +122,7 @@ def callback(callback_url, entity):
         headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
         # Send the callback response
-        requests.put(callback_url, headers=headers, json=json.dumps(entity).replace("{", "").replace("}", ""))
+        requests.put(callback_url, headers=headers, json=entity)
     except Exception as e:
         print("callback_error: ", e)
         return e
