@@ -116,8 +116,7 @@ def get_instance(entity_id):
 
 def callback(callback_url, entity):
     try:
-        print(str(entity))
-        print(json.dumps(entity))
+        print(entity)
         # Prepare the headers
         headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
