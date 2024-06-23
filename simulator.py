@@ -8,11 +8,9 @@ from bottle import get, request, run, HTTPResponse
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-INSTANCE_BEHAVIORS = ["fork_running", "fork_ready", "wait_running", "wait_ready"]
-
+INSTANCE_BEHAVIORS = ""  # possible behaviors for the cpee instance from config
 EXECUTOR = ThreadPoolExecutor(max_workers=1)
-INSTANCES = []
-QUEUE = []
+INSTANCES = []  # triple of instance (cpee response), entity_id (int), wait (bool)
 CURRENT_TIME = 0
 PROCESS_NAME = "process"  # default process name, allow to name i.e. db file
 # process_entity = the element that is being processed (in the hospital case its a patient)
@@ -24,25 +22,24 @@ def handle_task_async():
         # Get the callback url from the request
         callback_url = request.headers["CPEE-CALLBACK"]
         entity = {}  # entity object to store the process_entity data
+        task_type = request.query.get("task_type")
         entity["id"] = request.query.get("id")  # id of the entity in db
-        entity["data"] = request.query.get(
-            "data"
-        )  # everything the entity needs to know but the sim doesnt
-        entity["start_time"] = request.query.get(
-            "start_time"
-        )  # in hours, tracks entity start time in process
-        entity["total_time"] = request.query.get(
-            "total_time"
-        )  # in hours, tracks total time of entity in process
-        entity["resource"] = request.query.get(
-            "resource", ""
-        )  # the next resource the entity needs
+        # everything the entity needs to know but the sim doesnt, saved in the db and can be returned if needed in cpee
+        entity["data"] = request.query.get("data")
+        # in hours, tracks entity start time in process
+        entity["start_time"] = request.query.get("start_time")
+        # in hours, tracks total time of entity in process
+        entity["total_time"] = request.query.get("total_time", 0)
+        # the next resource the entity needs
+        entity["resource"] = request.query.get("resource", "")
+        # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
+        entity["priority"] = request.query.get("priority", 0)
         # mean and standard deviation for the normal distribution to calc time of task
         mean = request.query.get("mean", 0)
         sigma = request.query.get("sigma", 0)
         print("data: ", entity)
         # start the task execution
-        EXECUTOR.submit(task, entity, mean, sigma, callback_url)
+        EXECUTOR.submit(task, task_type, entity, mean, sigma, callback_url)
 
         # Immediate response indicating the request is accepted for async processing
         return HTTPResponse(
@@ -55,46 +52,75 @@ def handle_task_async():
         return e
 
 
-def task(entity, mean, sigma, callback_url):
+def task(task_type, entity, mean, sigma, callback_url):
     try:
-        # check if new entity
-        if (entity["id"] is None) or (entity["id"] == ""):
-            entity["resource"] = ""
-            entity["resource_available"] = "false"
-            entity["id"] = add_process_entity(entity)
-        # if entitiy already exists get it from db
-        else:
-            entity = get_process_entity(entity["id"])
+        global INSTANCES, CURRENT_TIME
+        # wait = True
+        # # check if instances turn for processing else wait
+        # while wait:
+        #     instance = get_instance(entity["id"])
+        #     if instance is None:
+        #         break
+        #     print("waiting", entity)
+        #     wait = instance[2]
+        if task_type == "arrival":
+            # if entity is new init and add it to db
+            if (entity["id"] is None) or (entity["id"] == ""):
+                entity["resource_available"] = "false"
+                entity["id"] = add_process_entity(entity)
+            # if entitiy already exists get it from db
+            else:
+                entity = get_process_entity(entity["id"])
 
+        elif task_type == "reschedule":
+            priority = entity["priority"]
+            instance = create_instance(entity["id"], entity)
+            for instance, index in INSTANCES:
+                current_entity = get_process_entity(instance[1])
+                if (
+                    current_entity["start_time"] + current_entity["total_time"]
+                    < CURRENT_TIME
+                ):
+                    INSTANCES = (
+                        INSTANCES[:index]
+                        + [instance, entity["id"], True]
+                        + INSTANCES[index:]
+                    )
+                    entity["start_time"] = CURRENT_TIME + 24
+                    set_process_entity(entity)
+        elif task_type == "resource":
             if entity["resource"] != "":
                 resource = get_resource(entity["resource"])
                 if resource["current"] < resource["max"]:
-                    resource["current"] += 1
+                    resource["current"] -= 1
                     set_resource(resource)
+                    entity["total_time"] += np.random.normal(mean, sigma)
+                    set_process_entity(entity)
                     entity["resource_available"] = "true"
                 else:
                     entity["resource_available"] = "false"
-            # if no resource replan
-            elif entity["resource_available"] == "false" and entity["resource"] == "":
-                create_instance(entity["id"], entity["data"])
-            entity["total_time"] += np.random.normal(mean, sigma)
+
+        callback(callback_url, entity)
     except Exception as e:
         print("task_error: ", e)
-    callback(callback_url)
 
 
-def callback(callback_url):
-    callback_response = {
-        "task_id": "task_id",
-        "status": "completed",
-        "result": {"success": True},
-    }
+def get_instance(entity_id):
+    time.sleep(0.5)
+    for instance in INSTANCES:
+        if instance[1] == entity_id:
+            return instance
+    return None
+
+
+def callback(callback_url, entity):
+    # callback_response = entity
 
     # Prepare the headers
     headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
     # Send the callback response
-    requests.put(callback_url, headers=headers, json=callback_response)
+    requests.put(callback_url, headers=headers, json=json.parse(entity))
 
 
 # creates database if not existing already
@@ -109,7 +135,8 @@ def create_database():
             start_time REAL NOT NULL,
             total_time REAL,
             resource TEXT, 
-            resource_available TEXT
+            resource_available TEXT,
+            priority INTEGER DEFAULT 0
         )
         """
     )
@@ -309,9 +336,10 @@ def create_instance(object_id, object_data={}, behavior="fork_running"):
 
 
 def __init__():
+    global INSTANCE_BEHAVIORS, PROCESS_NAME
     file = open("config.json")
     config = json.load(file)
-
+    INSTANCE_BEHAVIORS = config["instance_behaviors"]
     PROCESS_NAME = config["process_name"]
     create_database()
 

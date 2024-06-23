@@ -26,5 +26,11 @@
             "current": 9,
             "max": 9
         }
+    ],
+    "instance_behaviors": [
+        "fork_running",
+        "fork_ready",
+        "wait_running",
+        "wait_ready"
     ]
 }
