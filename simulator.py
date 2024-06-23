@@ -118,7 +118,7 @@ def callback(callback_url, entity):
         callback_response = {
             "task_id": "task_id",
             "status": "completed",
-            "result": {str(entity)},
+            "result": str(entity),
         }
         print(str(entity))
         print(json.dumps(entity))
