@@ -144,7 +144,7 @@ def add_process_entity(entity):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO process_entities(data, start_time, total_time, reource, resource_available)
+            INSERT INTO process_entities(data, start_time, total_time, resource, resource_available)
             VALUES(?, ?, ?, ?, ?)
             """,
             (
