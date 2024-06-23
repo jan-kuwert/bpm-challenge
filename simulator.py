@@ -114,13 +114,17 @@ def get_instance(entity_id):
 
 
 def callback(callback_url, entity):
-    # callback_response = entity
+    callback_response = {
+        "task_id": "task_id",
+        "status": "completed",
+        "result": {json.parse(entity)},
+    }
 
     # Prepare the headers
     headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
     # Send the callback response
-    requests.put(callback_url, headers=headers, json=json.parse(entity))
+    requests.put(callback_url, headers=headers, json=callback_response)
 
 
 # creates database if not existing already
