@@ -120,7 +120,8 @@ def callback(callback_url, entity):
             "status": "completed",
             "result": {str(entity)},
         }
-
+        print(str(entity))
+        print(json.dumps(entity))
         # Prepare the headers
         headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
