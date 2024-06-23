@@ -117,7 +117,6 @@ def get_instance(entity_id):
 
 def callback(callback_url, entity):
     try:
-        print(entity)
         # Prepare the headers
         headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
@@ -332,9 +331,9 @@ def create_instance(object_id, object_data={}, behavior="fork_running"):
         }
 
         response = requests.post(url, data=data)
-        return (
-            response.text
-        )  # response:  {'CPEE-INSTANCE': '49212', 'CPEE-INSTANCE-URL': 'https://cpee.org/flow/engine/49212', 'CPEE-INSTANCE-UUID': '821faad9-e39f-4a0e-871b-2f217920562c', 'CPEE-BEHAVIOR': 'fork_running'}
+        # response.text:  {'CPEE-INSTANCE': '49212', 'CPEE-INSTANCE-URL': 'https://cpee.org/flow/engine/49212', 'CPEE-INSTANCE-UUID': '821faad9-e39f-4a0e-871b-2f217920562c', 'CPEE-BEHAVIOR': 'fork_running'}
+        print("create_instance: ", response.text)
+        return response.text
     except Exception as e:
         print("create_instance_error: ", e)
         return e
