@@ -63,6 +63,7 @@ def task(task_type, entity, mean, sigma, callback_url):
         #         break
         #     print("waiting", entity)
         #     wait = instance[2]
+        print("task: ", task_type, task_type == "arrival")
         if task_type == "arrival":
             # if entity is new init and add it to db
             if (entity["id"] is None) or (entity["id"] == ""):
