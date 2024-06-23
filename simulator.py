@@ -115,18 +115,13 @@ def get_instance(entity_id):
 
 def callback(callback_url, entity):
     try:
-        callback_response = {
-            "task_id": "task_id",
-            "status": "completed",
-            "result": json.dumps(entity),
-        }
         print(str(entity))
         print(json.dumps(entity))
         # Prepare the headers
         headers = {"content-type": "application/json", "CPEE-CALLBACK": "true"}
 
         # Send the callback response
-        requests.put(callback_url, headers=headers, json=callback_response)
+        requests.put(callback_url, headers=headers, json=json.dumps(entity))
     except Exception as e:
         print("callback_error: ", e)
         return e
