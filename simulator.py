@@ -29,11 +29,11 @@ def handle_task_async():
         # in hours, tracks entity start time in process
         entity["start_time"] = request.query.get("start_time")
         # in hours, tracks total time of entity in process
-        entity["total_time"] = request.query.get("total_time", 0)
+        entity["total_time"] = request.query.get("total_time")
         # the next resource the entity needs
         entity["resource"] = request.query.get("resource", "")
         # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
-        entity["priority"] = request.query.get("priority", 0)
+        entity["priority"] = request.query.get("priority")
         # mean and standard deviation for the normal distribution to calc time of task
         mean = request.query.get("mean", 0)
         sigma = request.query.get("sigma", 0)
@@ -118,7 +118,7 @@ def callback(callback_url, entity):
         callback_response = {
             "task_id": "task_id",
             "status": "completed",
-            "result": {json.dumps(entity)},
+            "result": {str(entity)},
         }
 
         # Prepare the headers
@@ -359,4 +359,13 @@ def __init__():
 
 __init__()
 
+entity = {}
+entity["id"] = "request.query.get()"
+entity["data"] = "request.query."
+entity["start_time"] = "request.query.g"
+entity["total_time"] = "request.query.ge"
+entity["resource"] = "request.query."
+entity["priority"] = "request.query"
+
+print(str(entity))
 run(host="::1", port=23453)
