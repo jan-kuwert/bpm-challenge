@@ -68,6 +68,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             if (entity["id"] is None) or (entity["id"] == ""):
                 entity["resource_available"] = "false"
                 entity["id"] = add_process_entity(entity)
+                print("entity added: ", entity["id"])
             # if entitiy already exists get it from db
             else:
                 entity = get_process_entity(entity["id"])
