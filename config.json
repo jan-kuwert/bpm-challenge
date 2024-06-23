@@ -1,5 +1,6 @@
 {
-       "resources": [
+    "process_name": "hospital",
+    "resources": [
         {
             "name": "intake",
             "current": 4,
@@ -26,5 +27,4 @@
             "max": 9
         }
     ]
-       
 }
