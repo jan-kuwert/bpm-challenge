@@ -24,11 +24,19 @@ def handle_task_async():
         # Get the callback url from the request
         callback_url = request.headers["CPEE-CALLBACK"]
         entity = {}  # entity object to store the process_entity data
-        entity["id"] = request.query.get("id") #id of the entity in db
-        entity["data"] = request.query.get("data") #everything the entity needs to know but the sim doesnt
-        entity["start_time"] = request.query.get("start_time") #in hours, tracks entity start time in process
-        entity["total_time"] = request.query.get("total_time") #in hours, tracks total time of entity in process
-        entity["resource"] = request.query.get("resource", '') #the next resource the entity needs
+        entity["id"] = request.query.get("id")  # id of the entity in db
+        entity["data"] = request.query.get(
+            "data"
+        )  # everything the entity needs to know but the sim doesnt
+        entity["start_time"] = request.query.get(
+            "start_time"
+        )  # in hours, tracks entity start time in process
+        entity["total_time"] = request.query.get(
+            "total_time"
+        )  # in hours, tracks total time of entity in process
+        entity["resource"] = request.query.get(
+            "resource", ""
+        )  # the next resource the entity needs
         # mean and standard deviation for the normal distribution to calc time of task
         mean = request.query.get("mean", 0)
         sigma = request.query.get("sigma", 0)
@@ -58,7 +66,7 @@ def task(entity, mean, sigma, callback_url):
         # if entitiy already exists get it from db
         else:
             entity = get_process_entity(entity["id"])
-           
+
             if entity["resource"] != "":
                 resource = get_resource(entity["resource"])
                 if resource["current"] < resource["max"]:
@@ -67,7 +75,7 @@ def task(entity, mean, sigma, callback_url):
                     entity["resource_available"] = "true"
                 else:
                     entity["resource_available"] = "false"
-            #if no resource replan 
+            # if no resource replan
             elif entity["resource_available"] == "false" and entity["resource"] == "":
                 create_instance(entity["id"], entity["data"])
             entity["total_time"] += np.random.normal(mean, sigma)
@@ -137,7 +145,7 @@ def add_process_entity(entity):
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT INTO patients(data, start_time, total_time, reource, resource_available)
+            INSERT INTO process_entities(data, start_time, total_time, reource, resource_available)
             VALUES(?, ?, ?, ?, ?)
             """,
             (
@@ -183,7 +191,7 @@ def set_process_entity(entity):
         cursor = connection.cursor()
         cursor.execute(
             """
-            UPDATE patients
+            UPDATE process_entities
             SET data = ? , start_time =?, total_time = ?, resource = ?, resource_available = ?
             WHERE id = ?
             """,
@@ -200,7 +208,7 @@ def set_process_entity(entity):
         connection.close()
         return
     except Exception as e:
-        print("set_patient_error: ", e)
+        print("set_process_entity_error: ", e)
         return
 
 
