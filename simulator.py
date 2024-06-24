@@ -82,52 +82,48 @@ def task(task_type, entity, mean, sigma, callback_url):
                 entity = get_process_entity(entity["id"])
 
         elif task_type == "reschedule":
+
+            entity = get_process_entity(entity["id"])
+            print(entity)
+
             try:
+                new_instance = [
+                    create_instance(entity),
+                    entity["id"],
+                    True,
+                    False,
+                ]
+            except Exception as e:
+                print("reschedule_error2: ", e)
+            added = False
+            if len(INSTANCES) == 0:
+                INSTANCES.append(new_instance)
+                entity["start_time"] = CURRENT_TIME + 24
+                set_process_entity(entity)
+            else:
                 try:
-                    entity = get_process_entity(entity["id"])
+                    for i, instance in enumerate(INSTANCES):
+                        current_entity = get_process_entity(instance[1])
+                        if (
+                            current_entity["start_time"] + current_entity["total_time"]
+                            < CURRENT_TIME
+                        ):
+                            INSTANCES = (
+                                INSTANCES[:i]
+                                + [new_instance, entity["id"], False, False]
+                                + INSTANCES[i:]
+                            )
+                            entity["start_time"] = CURRENT_TIME + 24
+                            set_process_entity(entity)
+                            added = True
+                            break
                 except Exception as e:
-                    print("reschedule_error3: ", e)
-                try:
-                    new_instance = [
-                        create_instance(entity),
-                        entity["id"],
-                        True,
-                        False,
-                    ]
-                except Exception as e:
-                    print("reschedule_error2: ", e)
-                added = False
-                if len(INSTANCES) == 0:
+                    print("reschedule_error1: ", e)
+                if not added:
                     INSTANCES.append(new_instance)
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
-                else:
-                    try:
-                        for i, instance in enumerate(INSTANCES):
-                            current_entity = get_process_entity(instance[1])
-                            if (
-                                current_entity["start_time"]
-                                + current_entity["total_time"]
-                                < CURRENT_TIME
-                            ):
-                                INSTANCES = (
-                                    INSTANCES[:i]
-                                    + [new_instance, entity["id"], False, False]
-                                    + INSTANCES[i:]
-                                )
-                                entity["start_time"] = CURRENT_TIME + 24
-                                set_process_entity(entity)
-                                added = True
-                                break
-                    except Exception as e:
-                        print("reschedule_error1: ", e)
-                    if not added:
-                        INSTANCES.append(new_instance)
-                        entity["start_time"] = CURRENT_TIME + 24
-                        set_process_entity(entity)
-                print("Instances: ", INSTANCES)
-            except Exception as e:
-                print("reschedule_error: ", e)
+            print("Instances: ", INSTANCES)
 
         elif task_type == "resource":
             if entity["resource"] != "":
@@ -380,7 +376,7 @@ def create_instance(entity, behavior="fork_running"):
             "behavior": behavior,
             "url": xml_url,
             "init": '{"id": "'
-            + entity.pop("id")
+            + entity["id"]
             + ","
             + str(entity).replace("{", "").replace("}", "")
             + '"}',
