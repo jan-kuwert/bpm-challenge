@@ -379,7 +379,7 @@ def create_instance(entity, behavior="fork_running"):
             + '"'
             + entity["data"].split(",")[1]
             + '"'
-            + '"}',
+            + '}',
         )
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
