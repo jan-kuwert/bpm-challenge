@@ -84,18 +84,21 @@ def task(task_type, entity, mean, sigma, callback_url):
             instance = create_instance(entity["id"], entity)
             for i, instance in enumerate(INSTANCES):
                 current_entity = get_process_entity(instance[1])
-                if (
-                    current_entity["start_time"] + current_entity["total_time"]
-                    < CURRENT_TIME
-                ):
-                    INSTANCES = (
-                        INSTANCES[:i]
-                        + [instance, entity["id"], True, False]
-                        + INSTANCES[i:]
-                    )
-                    print("Instances: ", INSTANCES)
-                    entity["start_time"] = CURRENT_TIME + 24
-                    set_process_entity(entity)
+                try:
+                    if (
+                        current_entity["start_time"] + current_entity["total_time"]
+                        < CURRENT_TIME
+                    ):
+                        INSTANCES = (
+                            INSTANCES[:i]
+                            + [instance, entity["id"], True, False]
+                            + INSTANCES[i:]
+                        )
+                        print("Instances: ", INSTANCES)
+                        entity["start_time"] = CURRENT_TIME + 24
+                        set_process_entity(entity)
+                except Exception as e:
+                    print("reschedule_error: ", e)
 
         elif task_type == "resource":
             if entity["resource"] != "":
