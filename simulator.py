@@ -82,40 +82,42 @@ def task(task_type, entity, mean, sigma, callback_url):
                 entity = get_process_entity(entity["id"])
 
         elif task_type == "reschedule":
-            entity = get_process_entity(entity["id"])
-            priority = entity["priority"]
-            new_instance = [
-                create_instance(entity["id"], entity),
-                entity["id"],
-                True,
-                False,
-            ]
-            added = False
-            if len(INSTANCES) == 0:
-                INSTANCES.append(new_instance)
-                entity["start_time"] = CURRENT_TIME + 24
-                set_process_entity(entity)
-            else:
-                for i, instance in enumerate(INSTANCES):
-                    current_entity = get_process_entity(instance[1])
-                    if (
-                        current_entity["start_time"] + current_entity["total_time"]
-                        < CURRENT_TIME
-                    ):
-                        INSTANCES = (
-                            INSTANCES[:i]
-                            + [new_instance, entity["id"], False, False]
-                            + INSTANCES[i:]
-                        )
-                        entity["start_time"] = CURRENT_TIME + 24
-                        set_process_entity(entity)
-                        added = True
-                        break
-                if not added:
+            try:
+                entity = get_process_entity(entity["id"])
+                new_instance = [
+                    create_instance(entity["id"], entity),
+                    entity["id"],
+                    True,
+                    False,
+                ]
+                added = False
+                if len(INSTANCES) == 0:
                     INSTANCES.append(new_instance)
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
-            print("Instances: ", INSTANCES)
+                else:
+                    for i, instance in enumerate(INSTANCES):
+                        current_entity = get_process_entity(instance[1])
+                        if (
+                            current_entity["start_time"] + current_entity["total_time"]
+                            < CURRENT_TIME
+                        ):
+                            INSTANCES = (
+                                INSTANCES[:i]
+                                + [new_instance, entity["id"], False, False]
+                                + INSTANCES[i:]
+                            )
+                            entity["start_time"] = CURRENT_TIME + 24
+                            set_process_entity(entity)
+                            added = True
+                            break
+                    if not added:
+                        INSTANCES.append(new_instance)
+                        entity["start_time"] = CURRENT_TIME + 24
+                        set_process_entity(entity)
+                print("Instances: ", INSTANCES)
+            except Exception as e:
+                print("reschedule_error: ", e)
 
         elif task_type == "resource":
             if entity["resource"] != "":
