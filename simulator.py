@@ -369,16 +369,12 @@ def create_instance(entity, behavior="fork_running"):
     try:
         print(
             "create_instance: ",
-            '{"id": "'
+            '{"id": '
             + str(entity.pop("id"))
-            + '", "type": '
-            + '"'
-            + entity["data"].split(",")[0]
-            + '"'
+            + ', "type": '
+            + str(entity["data"].split(",")[0])
             + ', "diagnosis": '
-            + '"'
-            + entity["data"].split(",")[1]
-            + '"'
+            + str(entity["data"].split(",")[1])
             + '}',
         )
         if behavior not in INSTANCE_BEHAVIORS:
