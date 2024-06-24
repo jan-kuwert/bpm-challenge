@@ -387,7 +387,11 @@ def create_instance(entity, behavior="fork_running"):
         data = {
             "behavior": behavior,
             "url": xml_url,
-            "init": "{" + str(entity).replace("{", "").replace("}", "") + '"}',
+            "init": '{"id": "'
+            + str(entity.pop("id"))
+            + ","
+            + str(entity).replace("{", "").replace("}", "")
+            + '"}',
         }
 
         response = requests.post(url, data=data)
