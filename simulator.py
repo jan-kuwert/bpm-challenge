@@ -299,18 +299,19 @@ def set_process_entity(entity):
 
 
 # adds resource to database resource table
-def add_resource(resource_name, resource_data):
+def add_resource(resource_name, resource_current, resource_max):
     try:
         connection = sqlite3.connect(PROCESS_NAME + ".db")
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT OR REPLACE INTO resources(name, data)
+            INSERT OR REPLACE INTO resources(name, current, max)
             VALUES(?,?)
             """,
             (
                 resource_name,
-                resource_data,
+                resource_current,
+                resource_max,
             ),
         )
         connection.commit()
@@ -413,7 +414,7 @@ def __init__():
 
     # add resources to db
     for resource in config["resources"]:
-        add_resource(resource.pop("name"), str(resource))
+        add_resource(resource.pop("name"), resource["current"], resource["max"])
     file.close()
 
 
