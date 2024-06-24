@@ -388,7 +388,7 @@ def create_instance(entity, behavior="fork_running"):
             "behavior": behavior,
             "url": xml_url,
             "init": '{"id": "'
-            + str(entity["id"])
+            + str(entity.pop("id"))
             + ","
             + str(entity).replace("{", "").replace("}", "")
             + '"}',
