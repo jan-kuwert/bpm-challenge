@@ -358,7 +358,7 @@ def set_resource(resource_data):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
-        if resource_data["current"] <= resource_data["max"]:
+        if int(resource_data["current"]) <= int(resource_data["max"]):
             cursor.execute(
                 """
                 UPDATE resource
