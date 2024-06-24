@@ -341,6 +341,7 @@ def get_resource(resource_name):
         )
         resource = cursor.fetchone()
         connection.close()
+        print("get_resource: ", resource)
         response = {
             "id": resource[0],
             "name": resource[1],
