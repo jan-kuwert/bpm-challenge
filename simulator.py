@@ -127,7 +127,7 @@ def task(task_type, entity, mean, sigma, callback_url):
         elif task_type == "finish":
             try:
                 instance = get_instance(entity["id"])
-                print(1)
+                print(1, instance)
                 instance[3] = True  # set finished to true
                 print(2)
                 set_instance(instance)
