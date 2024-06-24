@@ -28,20 +28,23 @@ def handle_task_async():
         entity = {}  # entity object to store the process_entity data
         task_type = request.query.get("task_type")
         entity["id"] = request.query.get("id")  # id of the entity in db
+        if (entity["id"] is not None) or (entity["id"] != ""):
+            entity = get_process_entity(entity["id"])
         # everything the entity needs to know but the sim doesnt, saved in the db and can be returned if needed in cpee
-        entity["data"] = request.query.get("data")
+        entity["data"] = request.query.get("data", entity["data"])
         # in hours, tracks entity start time in process
-        entity["start_time"] = request.query.get("start_time")
+        entity["start_time"] = request.query.get("start_time", entity["start_time"])
         # in hours, tracks total time of entity in process
-        entity["total_time"] = request.query.get("total_time", 0)
+        entity["total_time"] = request.query.get("total_time", entity["total_time"])
         # the next resource the entity needs
-        entity["resource"] = request.query.get("resource")
+        entity["resource"] = request.query.get("resource", entity["resource"])
         print("task1: ", task_type, entity)
         # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
-        entity["priority"] = request.query.get("priority", 0)
+        entity["priority"] = request.query.get("priority", entity["priority"])
         # mean and standard deviation for the normal distribution to calc time of task
-        mean = request.query.get("mean", 0)
-        sigma = request.query.get("sigma", 0)
+        mean = request.query.get("mean", entity["mean"])
+        sigma = request.query.get("sigma", entity["sigma"])
+        print("task1: ", task_type, entity)
         # start the task execution
         EXECUTOR.submit(task, task_type, entity, mean, sigma, callback_url)
 
@@ -83,9 +86,6 @@ def task(task_type, entity, mean, sigma, callback_url):
                 if int(resource["current"]) > 0:
                     resource["current"] = int(resource["current"]) - 1
                     set_resource(resource)
-                    resource_name = resource["current"]
-                    entity = get_process_entity(entity["id"])
-                    entity["resource"] = resource_name
                     entity["total_time"] = int(entity["total_time"]) + np.random.normal(
                         mean, sigma
                     )
