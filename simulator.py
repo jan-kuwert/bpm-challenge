@@ -74,6 +74,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             # if entity is new init and add it to db
             if (entity["id"] is None) or (entity["id"] == ""):
                 entity["resource_available"] = "false"
+                print("arrival: ", entity)
                 entity["id"] = add_process_entity(entity)
             # if entitiy already exists get it from db
             else:
