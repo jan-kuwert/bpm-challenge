@@ -113,14 +113,12 @@ def task(task_type, entity, mean, sigma, callback_url):
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
         elif task_type == "resource":
-            resource = entity["resource"]
-            entity = get_process_entity(entity["id"])
-            entity["resource"] = resource
             if entity["resource"] != "":
                 resource = get_resource(entity["resource"])
                 if resource["current"] < resource["max"]:
                     resource["current"] -= 1
                     set_resource(resource)
+                    entity = get_process_entity(entity["id"])
                     entity["total_time"] += np.random.normal(mean, sigma)
                     set_process_entity(entity)
                     entity["resource_available"] = "true"
