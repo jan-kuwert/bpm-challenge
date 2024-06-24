@@ -8,10 +8,13 @@ from bottle import get, request, run, HTTPResponse
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-INSTANCE_BEHAVIORS = ""  # possible behaviors for the cpee instance from config
 EXECUTOR = ThreadPoolExecutor(max_workers=1)
-INSTANCES = []
+
+# saves possible behaviors for the cpee instance from config
+INSTANCE_BEHAVIORS = ""
 # contains: instance (cpee response with ID etc.), entity_id (int), wait (bool), finished (bool)
+INSTANCES = []
+# saves the current time of the simulation
 CURRENT_TIME = 0
 PROCESS_NAME = "process"  # default process name, allow to name i.e. db file
 # process_entity = the element that is being processed (in the hospital case its a patient)
@@ -81,24 +84,38 @@ def task(task_type, entity, mean, sigma, callback_url):
         elif task_type == "reschedule":
             entity = get_process_entity(entity["id"])
             priority = entity["priority"]
-            instance = create_instance(entity["id"], entity)
-            for i, instance in enumerate(INSTANCES):
-                current_entity = get_process_entity(instance[1])
-                try:
+            new_instance = [
+                create_instance(entity["id"], entity),
+                entity["id"],
+                True,
+                False,
+            ]
+            added = False
+            if len(INSTANCES) == 0:
+                INSTANCES.append(new_instance)
+                entity["start_time"] = CURRENT_TIME + 24
+                set_process_entity(entity)
+            else:
+                for i, instance in enumerate(INSTANCES):
+                    current_entity = get_process_entity(instance[1])
                     if (
                         current_entity["start_time"] + current_entity["total_time"]
                         < CURRENT_TIME
                     ):
                         INSTANCES = (
                             INSTANCES[:i]
-                            + [instance, entity["id"], True, False]
+                            + [new_instance, entity["id"], False, False]
                             + INSTANCES[i:]
                         )
-                        print("Instances: ", INSTANCES)
                         entity["start_time"] = CURRENT_TIME + 24
                         set_process_entity(entity)
-                except Exception as e:
-                    print("reschedule_error: ", e)
+                        added = True
+                        break
+                if not added:
+                    INSTANCES.append(new_instance)
+                    entity["start_time"] = CURRENT_TIME + 24
+                    set_process_entity(entity)
+            print("Instances: ", INSTANCES)
 
         elif task_type == "resource":
             if entity["resource"] != "":
