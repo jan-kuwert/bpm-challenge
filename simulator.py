@@ -57,90 +57,79 @@ def handle_task_async():
 
 
 def task(task_type, entity, mean, sigma, callback_url):
-    try:
-        global INSTANCES, CURRENT_TIME
-        wait = True
-        # check if instances turn for processing else wait
-        while wait:
-            instance = get_instance(entity["id"])
-            if instance is None or instance[3]:
-                break
-            if instance[1]["start_time"] <= CURRENT_TIME:
-                wait = False
-            else:
-                time.sleep(0.5)
-                print("waiting", entity)
-
-        if task_type == "arrival":
-            # if entity is new init and add it to db
-            if (entity["id"] is None) or (entity["id"] == ""):
-                entity["resource_available"] = "false"
-                entity["id"] = add_process_entity(entity)
-                print("entity added: ", entity["id"])
-            # if entitiy already exists get it from db
-            else:
-                entity = get_process_entity(entity["id"])
-
-        elif task_type == "reschedule":
-
+    global INSTANCES, CURRENT_TIME
+    wait = True
+    # check if instances turn for processing else wait
+    while wait:
+        instance = get_instance(entity["id"])
+        if instance is None or instance[3]:
+            break
+        if instance[1]["start_time"] <= CURRENT_TIME:
+            wait = False
+        else:
+            time.sleep(0.5)
+            print("waiting", entity)
+    if task_type == "arrival":
+        # if entity is new init and add it to db
+        if (entity["id"] is None) or (entity["id"] == ""):
+            entity["resource_available"] = "false"
+            entity["id"] = add_process_entity(entity)
+            print("entity added: ", entity["id"])
+        # if entitiy already exists get it from db
+        else:
             entity = get_process_entity(entity["id"])
-
-            new_instance = [
-                create_instance(entity),
-                entity["id"],
-                True,
-                False,
-            ]
-            print("new_instance: ", new_instance[1])
-            added = False
-            if len(INSTANCES) == 0:
+    elif task_type == "reschedule":
+        entity = get_process_entity(entity["id"])
+        new_instance = [
+            create_instance(entity),
+            entity["id"],
+            True,
+            False,
+        ]
+        print("new_instance: ", new_instance[1])
+        added = False
+        if len(INSTANCES) == 0:
+            INSTANCES.append(new_instance)
+            entity["start_time"] = CURRENT_TIME + 24
+            set_process_entity(entity)
+        else:
+            for i, instance in enumerate(INSTANCES):
+                current_entity = get_process_entity(instance[1])
+                if (
+                    current_entity["start_time"] + current_entity["total_time"]
+                    < CURRENT_TIME
+                ):
+                    INSTANCES = (
+                        INSTANCES[:i]
+                        + [new_instance, entity["id"], False, False]
+                        + INSTANCES[i:]
+                    )
+                    entity["start_time"] = CURRENT_TIME + 24
+                    set_process_entity(entity)
+                    added = True
+                    break
+            if not added:
                 INSTANCES.append(new_instance)
                 entity["start_time"] = CURRENT_TIME + 24
                 set_process_entity(entity)
+    elif task_type == "resource":
+        if entity["resource"] != "":
+            resource = get_resource(entity["resource"])
+            if resource["current"] < resource["max"]:
+                resource["current"] -= 1
+                set_resource(resource)
+                entity["total_time"] += np.random.normal(mean, sigma)
+                set_process_entity(entity)
+                entity["resource_available"] = "true"
             else:
-                for i, instance in enumerate(INSTANCES):
-                    current_entity = get_process_entity(instance[1])
-                    if (
-                        current_entity["start_time"] + current_entity["total_time"]
-                        < CURRENT_TIME
-                    ):
-                        INSTANCES = (
-                            INSTANCES[:i]
-                            + [new_instance, entity["id"], False, False]
-                            + INSTANCES[i:]
-                        )
-                        entity["start_time"] = CURRENT_TIME + 24
-                        set_process_entity(entity)
-                        added = True
-                        break
-
-                if not added:
-                    INSTANCES.append(new_instance)
-                    entity["start_time"] = CURRENT_TIME + 24
-                    set_process_entity(entity)
-
-        elif task_type == "resource":
-            if entity["resource"] != "":
-                resource = get_resource(entity["resource"])
-                if resource["current"] < resource["max"]:
-                    resource["current"] -= 1
-                    set_resource(resource)
-                    entity["total_time"] += np.random.normal(mean, sigma)
-                    set_process_entity(entity)
-                    entity["resource_available"] = "true"
-                else:
-                    entity["resource_available"] = "false"
-
-        elif task_type == "finish":
-            instance = get_instance(entity["id"])
-            instance[3] = True  # set finished to true
-            set_instance(instance)
-            CURRENT_TIME += 24
-            print("finished: ", entity, CURRENT_TIME),
-
-        callback(callback_url, entity)
-    except Exception as e:
-        print("task_error: ", e)
+                entity["resource_available"] = "false"
+    elif task_type == "finish":
+        instance = get_instance(entity["id"])
+        instance[3] = True  # set finished to true
+        set_instance(instance)
+        CURRENT_TIME += 24
+        print("finished: ", entity, CURRENT_TIME),
+    callback(callback_url, entity)
 
 
 def get_instance(entity_id):
@@ -245,7 +234,7 @@ def add_process_entity(entity):
 def get_process_entity(entity_id):
     try:
         entity_id = entity_id.split(",")[0]
-        print("entity_id",entity_id)
+        print("entity_id", entity_id)
         connection = sqlite3.connect(PROCESS_NAME + ".db")
         cursor = connection.cursor()
         cursor.execute(
@@ -390,10 +379,10 @@ def create_instance(entity, behavior="fork_running"):
             "init": '{"id": "'
             + str(entity.pop("id"))
             + ', "type": '
-            + str(json.loads(entity['data'])['type'])
+            + str(json.loads(entity["data"])["type"])
             + ', "diagnosis": '
-            + str(json.loads(entity['data'])['diagnosis'])
-            + '"}', 
+            + str(json.loads(entity["data"])["diagnosis"])
+            + '"}',
         }
 
         response = requests.post(url, data=data)
