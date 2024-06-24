@@ -261,7 +261,15 @@ def get_process_entity(entity_id):
         )
         entity = cursor.fetchone()
         connection.close()
-        return entity
+        response = {
+            "id": entity[0],
+            "data": entity[1],
+            "start_time": entity[2],
+            "total_time": entity[3],
+            "resource": entity[4],
+            "resource_available": entity[5],
+        }
+        return response
     except Exception as e:
         print("get_process_entity_error: ", e)
         return
