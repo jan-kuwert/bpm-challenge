@@ -390,16 +390,12 @@ def create_instance(entity, behavior="fork_running"):
         data = {
             "behavior": behavior,
             "url": xml_url,
-            "init": '{"id": "'
+            "init": '{"id": '
             + str(entity.pop("id"))
-            + '", "type": '
-            + '"'
-            + entity["data"].split(",")[0]
-            + '"'
+            + ', "type": '
+            + str(entity["data"].split(",")[0])
             + ', "diagnosis": '
-            + '"'
-            + entity["data"].split(",")[1]
-            + '"'
+            + str(entity["data"].split(",")[1])
             + '}',
         }
 
