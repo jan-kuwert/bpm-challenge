@@ -57,7 +57,6 @@ def handle_task_async():
 
 def task(task_type, entity, mean, sigma, callback_url):
     try:
-        print("task: ", task_type, entity["id"])
         global INSTANCES, CURRENT_TIME
         wait = True
         # check if instances turn for processing else wait
@@ -72,6 +71,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 print("waiting", entity["id"])
         if task_type == "arrival":
             # if entity is new init and add it to db
+            print("task: ", entity["id"])
             if (entity["id"] is None) or (entity["id"] == ""):
                 entity["resource_available"] = "false"
                 entity["id"] = add_process_entity(entity)
