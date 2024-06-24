@@ -125,6 +125,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                     set_process_entity(entity)
         elif task_type == "resource":
             if (entity["id"] is not None) or (entity["id"] != ""):
+                print("resource: ", entity)
                 resource = get_resource(entity["resource"])
                 if int(resource["current"]) > 0:
                     resource["current"] = int(resource["current"]) - 1
