@@ -35,7 +35,7 @@ def handle_task_async():
         # in hours, tracks total time of entity in process
         entity["total_time"] = request.query.get("total_time", 0)
         # the next resource the entity needs
-        entity["resource"] = request.query.get("resource", "")
+        entity["resource"] = request.query.get("resource")
         # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
         entity["priority"] = request.query.get("priority", 0)
         # mean and standard deviation for the normal distribution to calc time of task
@@ -206,17 +206,8 @@ def create_database():
         CREATE TABLE IF NOT EXISTS resources(
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            data TEXT NOT NULL
-        )
-        """
-    )
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS logs(
-            id INTEGER PRIMARY KEY,
-            task_object_id
-            tasks TEXT NOT NULL,
-            error TEXT
+            current TEXT NOT NULL,
+            max TEXT NOT NULL
         )
         """
     )
@@ -428,19 +419,4 @@ def __init__():
 
 __init__()
 
-# entity = {}
-# entity["id"] = "request.query.get()"
-# entity["data"] = "request.query."
-# entity["start_time"] = "request.query.g"
-# entity["total_time"] = "request.query.ge"
-# entity["data"] = '{ "type": "B", "diagnosis": "C" }'
-# entity["priority"] = "request.query"
-
-# print('{"id": "'
-#             + str(entity.pop("id"))
-#             + ', "type": '
-#             + json.loads(entity['data'])['type']
-#             + ', "diagnosis": '
-#             + json.loads(entity['data'])['diagnosis']
-#             + '"}')
 run(host="::1", port=23453)
