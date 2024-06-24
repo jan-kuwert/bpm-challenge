@@ -14,10 +14,24 @@ EXECUTOR = ThreadPoolExecutor(max_workers=1)
 INSTANCE_BEHAVIORS = ""
 # contains: instance (cpee response with ID etc.), entity_id (int), wait (bool), finished (bool)
 INSTANCES = []
+# contains at what time which entity uses what resource
+# each resource has its own array in the order of config file
+# each array contains entries [start_time, end_time, entity_id]
+RESOURCE_SCHEDULES = []
 # saves the current time of the simulation
 CURRENT_TIME = 0
 PROCESS_NAME = "process"  # default process name, allow to name i.e. db file
 # process_entity = the element that is being processed (in the hospital case its a patient)
+
+LIST = [
+    "data",  # everything the entity needs to know but the sim doesnt, saved in the db and can be returned if needed in cpee
+    "start_time",  # in hours, tracks entity start time in process
+    "total_time",  # in hours, tracks total time of entity in process
+    "resource",  # the next resource the entity needs
+    "priority",  # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
+    "mean",  # mean and standard deviation for the normal distribution to calc time of task
+    "sigma",
+]
 
 
 @get("/task")
@@ -30,21 +44,14 @@ def handle_task_async():
         entity["id"] = request.query.get("id")  # id of the entity in db
         if (entity["id"] is not None) and (entity["id"] != ""):
             entity = get_process_entity(entity["id"])
-        # everything the entity needs to know but the sim doesnt, saved in the db and can be returned if needed in cpee
-        entity["data"] = request.query.get("data", entity["data"])
-        # in hours, tracks entity start time in process
-        entity["start_time"] = request.query.get("start_time", entity["start_time"])
-        # in hours, tracks total time of entity in process
-        entity["total_time"] = request.query.get("total_time", entity["total_time"])
-        # the next resource the entity needs
-        entity["resource"] = request.query.get("resource", entity["resource"])
-        print("task1: ", task_type, entity)
-        # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
-        entity["priority"] = request.query.get("priority", entity["priority"])
-        # mean and standard deviation for the normal distribution to calc time of task
-        mean = request.query.get("mean", entity["mean"])
-        sigma = request.query.get("sigma", entity["sigma"])
-        print("task1: ", task_type, entity)
+
+        for key in LIST:
+            key_data = request.query.get(key)
+            if key_data is not None and key_data != "":
+                entity[key] = key_data
+        mean = float(request.query.get("mean"))
+        sigma = float(request.query.get("sigma"))
+        set_process_entity(entity)
         # start the task execution
         EXECUTOR.submit(task, task_type, entity, mean, sigma, callback_url)
 
@@ -71,6 +78,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 break
             if instance[1]["start_time"] <= CURRENT_TIME:
                 wait = False
+                print("no wait needed")
             else:
                 time.sleep(0.5)
                 print("waiting", entity["id"])
@@ -78,8 +86,8 @@ def task(task_type, entity, mean, sigma, callback_url):
             # if entity is new init and add it to db
             if (entity["id"] is None) or (entity["id"] == ""):
                 entity["resource_available"] = "false"
-                print("arrival: ", entity)
                 entity["id"] = add_process_entity(entity)
+                print("arrival: ", entity)
             # if entitiy already exists get it from db
             else:
                 resource = get_resource(entity["resource"])
@@ -103,9 +111,8 @@ def task(task_type, entity, mean, sigma, callback_url):
             ]
             added = False
             if len(INSTANCES) == 0:
-                INSTANCES.append(new_instance)
-                entity["start_time"] = CURRENT_TIME + 24
-                set_process_entity(entity)
+                # sends the instance to appending
+                added = False
             else:
                 for i, instance in enumerate(INSTANCES):
                     current_entity = get_process_entity(instance[1])
@@ -122,26 +129,25 @@ def task(task_type, entity, mean, sigma, callback_url):
                         set_process_entity(entity)
                         added = True
                         break
-                if not added:
-                    INSTANCES.append(new_instance)
-                    entity["start_time"] = CURRENT_TIME + 24
-                    set_process_entity(entity)
+            if not added:
+                INSTANCES.append(new_instance)
+                entity["start_time"] = CURRENT_TIME + 24
+                set_process_entity(entity)
         elif task_type == "resource":
             if (entity["id"] is not None) or (entity["id"] != ""):
                 entity = get_process_entity(entity["id"])
                 print("resource: ", entity)
                 resource = get_resource(entity["resource"])
-                if int(resource["current"]) > 0:
-                    resource["current"] = int(resource["current"]) - 1
-                    set_resource(resource)
-                    entity = get_process_entity(entity["id"])
-                    entity["total_time"] = int(entity["total_time"]) + np.random.normal(
-                        mean, sigma
-                    )
-                    set_process_entity(entity)
-                    entity["resource_available"] = "true"
-                else:
-                    entity["resource_available"] = "false"
+                task_time = np.random.normal(mean, sigma)
+                RESOURCE_SCHEDULES[resource["id"]].append(
+                    [CURRENT_TIME, CURRENT_TIME + task_time, entity["id"]]
+                )
+                print(RESOURCE_SCHEDULES[resource["id"]])
+                entity["resource_available"] = "true"
+                entity["total_time"] = int(entity["total_time"]) + task_time
+                set_process_entity(entity)
+            else:
+                entity["resource_available"] = "false"
         elif task_type == "finish":
             try:
                 instance = get_instance(entity["id"])
@@ -416,13 +422,12 @@ def create_instance(entity, behavior="fork_running"):
 
 
 def __init__():
-    global INSTANCE_BEHAVIORS, PROCESS_NAME
+    global INSTANCE_BEHAVIORS, PROCESS_NAME, RESOURCE_SCHEDULES
     file = open("config.json")
     config = json.load(file)
     INSTANCE_BEHAVIORS = config["instance_behaviors"]
     PROCESS_NAME = config["process_name"]
     create_database()
-
     # add resources to db
     for resource in config["resources"]:
         add_resource(resource.pop("name"), resource["current"], resource["max"])
