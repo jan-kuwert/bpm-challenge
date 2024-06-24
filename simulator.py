@@ -369,7 +369,7 @@ def create_instance(entity, behavior="fork_running"):
     try:
         print(
             "create_instance: ",
-            '{"id": '
+            '"{"id": '
             + str(entity.pop("id"))
             + ', "type": '
             + str(entity["data"].split(",")[0])
@@ -386,13 +386,13 @@ def create_instance(entity, behavior="fork_running"):
         data = {
             "behavior": behavior,
             "url": xml_url,
-            "init": '{"id": "'
+            "init": '"{"id": "'
             + str(entity.pop("id"))
             + '", "type": "'
             + str(entity["data"].split(",")[0])
             + '", "diagnosis": "'
             + str(entity["data"].split(",")[1])
-            + '"}',
+            + '"}"',
         }
 
         response = requests.post(url, data=data)
