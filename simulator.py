@@ -89,7 +89,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                     print("reschedule_error3: ", e)
                 try:
                     new_instance = [
-                        create_instance(entity["id"], entity),
+                        create_instance(entity),
                         entity["id"],
                         True,
                         False,
@@ -106,7 +106,8 @@ def task(task_type, entity, mean, sigma, callback_url):
                         for i, instance in enumerate(INSTANCES):
                             current_entity = get_process_entity(instance[1])
                             if (
-                                current_entity["start_time"] + current_entity["total_time"]
+                                current_entity["start_time"]
+                                + current_entity["total_time"]
                                 < CURRENT_TIME
                             ):
                                 INSTANCES = (
@@ -369,7 +370,7 @@ def set_resource(resource_data):
 
 
 # creates new process instance with object id and if needed additional data
-def create_instance(object_id, object_data={}, behavior="fork_running"):
+def create_instance(entity, behavior="fork_running"):
     try:
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
@@ -379,9 +380,9 @@ def create_instance(object_id, object_data={}, behavior="fork_running"):
             "behavior": behavior,
             "url": xml_url,
             "init": '{"id": "'
-            + str(object_id)
+            + entity.pop("id")
             + ","
-            + str(object_data).replace("{", "").replace("}", "")
+            + str(entity).replace("{", "").replace("}", "")
             + '"}',
         }
 
