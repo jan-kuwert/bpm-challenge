@@ -36,7 +36,7 @@ def handle_task_async():
         entity["total_time"] = request.query.get("total_time", 0)
         # the next resource the entity needs
         entity["resource"] = request.query.get("resource")
-        print("task: ", task_type, entity["resource"])
+        print("task1: ", task_type, entity)
         # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
         entity["priority"] = request.query.get("priority", 0)
         # mean and standard deviation for the normal distribution to calc time of task
