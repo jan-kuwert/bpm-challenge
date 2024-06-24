@@ -369,8 +369,17 @@ def create_instance(entity, behavior="fork_running"):
     try:
         print(
             "create_instance: ",
-            entity["data"].split(",")[0],
-            entity["data"].split(",")[1],
+            '{"id": "'
+            + str(entity.pop("id"))
+            + ', "type": '
+            + '"'
+            + entity["data"].split(",")[0]
+            + '"'
+            + ', "diagnosis": '
+            + '"'
+            + entity["data"].split(",")[1]
+            + '"'
+            + '"}',
         )
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
