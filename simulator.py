@@ -74,7 +74,6 @@ def task(task_type, entity, mean, sigma, callback_url):
         if (entity["id"] is None) or (entity["id"] == ""):
             entity["resource_available"] = "false"
             entity["id"] = add_process_entity(entity)
-            print("entity added: ", entity["id"])
         # if entitiy already exists get it from db
         else:
             entity = get_process_entity(entity["id"])
@@ -367,16 +366,6 @@ def set_resource(resource_data):
 # creates new process instance with object id and if needed additional data
 def create_instance(entity, behavior="fork_running"):
     try:
-        print(
-            "create_instance: ",
-            '"{"id": "'
-            + str(entity['id'])
-            + '", "type": "'
-            + str(entity["data"].split(",")[0])
-            + '", "diagnosis": "'
-            + str(entity["data"].split(",")[1])
-            + '"}"',
-        )
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
         if entity["id"] is None:
@@ -397,7 +386,6 @@ def create_instance(entity, behavior="fork_running"):
 
         response = requests.post(url, data=data)
         # response.text:  {'CPEE-INSTANCE': '49212', 'CPEE-INSTANCE-URL': 'https://cpee.org/flow/engine/49212', 'CPEE-INSTANCE-UUID': '821faad9-e39f-4a0e-871b-2f217920562c', 'CPEE-BEHAVIOR': 'fork_running'}
-        print("create_instance: ", response.text)
         return response.text
     except Exception as e:
         print("create_instance_error: ", e)
