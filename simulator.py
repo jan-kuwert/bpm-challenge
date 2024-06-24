@@ -342,13 +342,13 @@ def get_resource(resource_name):
         )
         resource = cursor.fetchone()
         connection.close()
-        print("get_resource: ", resource)
         response = {
             "id": resource[0],
             "name": resource[1],
             "current": resource[2],
             "max": resource[3],
         }
+        print("get_resource: ", response)
         return response
     except Exception as e:
         print("get_resource_error: ", e)
