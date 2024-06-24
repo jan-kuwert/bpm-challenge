@@ -41,7 +41,6 @@ def handle_task_async():
         # mean and standard deviation for the normal distribution to calc time of task
         mean = request.query.get("mean", 0)
         sigma = request.query.get("sigma", 0)
-        print("data: ", entity)
         # start the task execution
         EXECUTOR.submit(task, task_type, entity, mean, sigma, callback_url)
 
@@ -57,6 +56,7 @@ def handle_task_async():
 
 
 def task(task_type, entity, mean, sigma, callback_url):
+    print("task: ", task_type, entity["id"])
     global INSTANCES, CURRENT_TIME
     wait = True
     # check if instances turn for processing else wait
@@ -68,7 +68,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             wait = False
         else:
             time.sleep(0.5)
-            print("waiting", entity)
+            print("waiting", entity["id"])
     if task_type == "arrival":
         # if entity is new init and add it to db
         if (entity["id"] is None) or (entity["id"] == ""):
