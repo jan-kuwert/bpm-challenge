@@ -127,10 +127,15 @@ def task(task_type, entity, mean, sigma, callback_url):
         elif task_type == "finish":
             try:
                 instance = get_instance(entity["id"])
+                print(1)
                 instance[3] = True  # set finished to true
+                print(2)
                 set_instance(instance)
+                print(3)
                 CURRENT_TIME += 24
+                print(4)
                 entity = get_process_entity(entity["id"])
+                print(5)
                 print("finished: ", entity, CURRENT_TIME),
             except Exception as e:
                 print("finish_error: ", e)
