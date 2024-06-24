@@ -56,14 +56,17 @@ def handle_task_async():
 def task(task_type, entity, mean, sigma, callback_url):
     try:
         global INSTANCES, CURRENT_TIME
-        # wait = True
-        # # check if instances turn for processing else wait
-        # while wait:
-        #     instance = get_instance(entity["id"])
-        #     if instance is None or instance[3]:
-        #         break
-        #     print("waiting", entity)
-        #     wait = instance[2]
+        wait = True
+        # check if instances turn for processing else wait
+        while wait:
+            instance = get_instance(entity["id"])
+            if instance is None or instance[3]:
+                break
+            if instance[1]["start_time"] <= CURRENT_TIME:
+                wait = False
+            else:
+                time.sleep(0.5)
+                print("waiting", entity)
 
         if task_type == "arrival":
             # if entity is new init and add it to db
@@ -110,6 +113,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             instance = get_instance(entity["id"])
             instance[3] = True  # set finished to true
             set_instance(instance)
+            CURRENT_TIME += 24
 
         callback(callback_url, entity)
     except Exception as e:
@@ -118,7 +122,6 @@ def task(task_type, entity, mean, sigma, callback_url):
 
 def get_instance(entity_id):
     try:
-        time.sleep(0.5)
         for instance in INSTANCES:
             if instance[1] == entity_id:
                 return instance
