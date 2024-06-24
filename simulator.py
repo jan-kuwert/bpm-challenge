@@ -380,7 +380,7 @@ def create_instance(entity, behavior="fork_running"):
             "behavior": behavior,
             "url": xml_url,
             "init": '{"id": "'
-            + str(entity.pop("id"))
+            + str(entity["id"])
             + '", "type": "'
             + str(entity["data"].split(",")[0])
             + '", "diagnosis": "'
