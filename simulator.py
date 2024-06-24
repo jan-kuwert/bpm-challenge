@@ -77,7 +77,16 @@ def task(task_type, entity, mean, sigma, callback_url):
                 entity["id"] = add_process_entity(entity)
             # if entitiy already exists get it from db
             else:
-                entity = get_process_entity(entity["id"])
+                resource = get_resource(entity["resource"])
+                if resource["current"] < resource["max"]:
+                    resource["current"] -= 1
+                    set_resource(resource)
+                    entity = get_process_entity(entity["id"])
+                    entity["total_time"] += np.random.normal(mean, sigma)
+                    set_process_entity(entity)
+                    entity["resource_available"] = "true"
+                else:
+                    entity["resource_available"] = "false"
         elif task_type == "reschedule":
             entity = get_process_entity(entity["id"])
             new_instance = [
@@ -86,7 +95,6 @@ def task(task_type, entity, mean, sigma, callback_url):
                 True,
                 False,
             ]
-            print("new_instance: ", new_instance[1])
             added = False
             if len(INSTANCES) == 0:
                 INSTANCES.append(new_instance)
