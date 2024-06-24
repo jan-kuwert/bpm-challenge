@@ -83,13 +83,19 @@ def task(task_type, entity, mean, sigma, callback_url):
 
         elif task_type == "reschedule":
             try:
-                entity = get_process_entity(entity["id"])
-                new_instance = [
-                    create_instance(entity["id"], entity),
-                    entity["id"],
-                    True,
-                    False,
-                ]
+                try:
+                    entity = get_process_entity(entity["id"])
+                except Exception as e:
+                    print("reschedule_error3: ", e)
+                try:
+                    new_instance = [
+                        create_instance(entity["id"], entity),
+                        entity["id"],
+                        True,
+                        False,
+                    ]
+                except Exception as e:
+                    print("reschedule_error2: ", e)
                 added = False
                 if len(INSTANCES) == 0:
                     INSTANCES.append(new_instance)
