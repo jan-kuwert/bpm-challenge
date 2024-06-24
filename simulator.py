@@ -88,7 +88,6 @@ def task(task_type, entity, mean, sigma, callback_url):
                     )
                     set_process_entity(entity)
                     entity["resource_available"] = "true"
-                    print("resource_available: true")
                 else:
                     entity["resource_available"] = "false"
         elif task_type == "reschedule":
@@ -127,11 +126,13 @@ def task(task_type, entity, mean, sigma, callback_url):
         elif task_type == "resource":
             if entity["resource"] != "":
                 resource = get_resource(entity["resource"])
-                if resource["current"] < resource["max"]:
-                    resource["current"] -= 1
+                if int(resource["current"]) > 0:
+                    resource["current"] = int(resource["current"]) - 1
                     set_resource(resource)
                     entity = get_process_entity(entity["id"])
-                    entity["total_time"] += np.random.normal(mean, sigma)
+                    entity["total_time"] = int(entity["total_time"]) + np.random.normal(
+                        mean, sigma
+                    )
                     set_process_entity(entity)
                     entity["resource_available"] = "true"
                 else:
