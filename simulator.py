@@ -10,7 +10,8 @@ import time
 
 INSTANCE_BEHAVIORS = ""  # possible behaviors for the cpee instance from config
 EXECUTOR = ThreadPoolExecutor(max_workers=1)
-INSTANCES = []  # triple of instance (cpee response), entity_id (int), wait (bool)
+INSTANCES = []
+# contains: instance (cpee response with ID etc.), entity_id (int), wait (bool), finished (bool)
 CURRENT_TIME = 0
 PROCESS_NAME = "process"  # default process name, allow to name i.e. db file
 # process_entity = the element that is being processed (in the hospital case its a patient)
@@ -59,11 +60,11 @@ def task(task_type, entity, mean, sigma, callback_url):
         # # check if instances turn for processing else wait
         # while wait:
         #     instance = get_instance(entity["id"])
-        #     if instance is None:
+        #     if instance is None or instance[3]:
         #         break
         #     print("waiting", entity)
         #     wait = instance[2]
-        print("task: ", task_type, task_type == "arrival")
+
         if task_type == "arrival":
             # if entity is new init and add it to db
             if (entity["id"] is None) or (entity["id"] == ""):
@@ -75,6 +76,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 entity = get_process_entity(entity["id"])
 
         elif task_type == "reschedule":
+            entity = get_process_entity(entity["id"])
             priority = entity["priority"]
             instance = create_instance(entity["id"], entity)
             for instance, index in INSTANCES:
@@ -85,11 +87,13 @@ def task(task_type, entity, mean, sigma, callback_url):
                 ):
                     INSTANCES = (
                         INSTANCES[:index]
-                        + [instance, entity["id"], True]
+                        + [instance, entity["id"], True, False]
                         + INSTANCES[index:]
                     )
+                    print("Instances: ", INSTANCES)
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
+
         elif task_type == "resource":
             if entity["resource"] != "":
                 resource = get_resource(entity["resource"])
@@ -102,17 +106,34 @@ def task(task_type, entity, mean, sigma, callback_url):
                 else:
                     entity["resource_available"] = "false"
 
+        elif task_type == "finish":
+            instance = get_instance(entity["id"])
+            instance[3] = True  # set finished to true
+            set_instance(instance)
+
         callback(callback_url, entity)
     except Exception as e:
         print("task_error: ", e)
 
 
 def get_instance(entity_id):
-    time.sleep(0.5)
-    for instance in INSTANCES:
-        if instance[1] == entity_id:
-            return instance
-    return None
+    try:
+        time.sleep(0.5)
+        for instance in INSTANCES:
+            if instance[1] == entity_id:
+                return instance
+        return None
+    except Exception as e:
+        print("get_instance_error: ", e)
+
+
+def set_instance(updated_instance):
+    try:
+        for instance in INSTANCES:
+            if instance[1] == updated_instance[1]:
+                instance = updated_instance
+    except Exception as e:
+        print("set_instance_error: ", e)
 
 
 def callback(callback_url, entity):
