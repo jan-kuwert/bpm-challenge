@@ -244,8 +244,8 @@ def add_process_entity(entity):
 
 # returns patient data from database
 def get_process_entity(entity_id):
-    print(entity_id)
     try:
+        print("entity_id",entity_id)
         connection = sqlite3.connect(PROCESS_NAME + ".db")
         cursor = connection.cursor()
         cursor.execute(
