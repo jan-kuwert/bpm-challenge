@@ -78,6 +78,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             # if entitiy already exists get it from db
             else:
                 resource = get_resource(entity["resource"])
+                print("resource: ", resource, entity)
                 if resource["current"] < resource["max"]:
                     resource["current"] -= 1
                     set_resource(resource)
@@ -85,6 +86,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                     entity["total_time"] += np.random.normal(mean, sigma)
                     set_process_entity(entity)
                     entity["resource_available"] = "true"
+                    print("resource_available: true")
                 else:
                     entity["resource_available"] = "false"
         elif task_type == "reschedule":
