@@ -49,8 +49,8 @@ def handle_task_async():
             key_data = request.query.get(key)
             if key_data is not None and key_data != "":
                 entity[key] = key_data
-        mean = float(request.query.get("mean"))
-        sigma = float(request.query.get("sigma"))
+        mean = request.query.get("mean")
+        sigma = request.query.get("sigma")
         set_process_entity(entity)
         # start the task execution
         EXECUTOR.submit(task, task_type, entity, mean, sigma, callback_url)
