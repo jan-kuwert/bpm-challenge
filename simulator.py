@@ -384,13 +384,15 @@ def create_instance(entity, behavior="fork_running"):
     try:
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
+        if entity["id"] is None:
+            raise ValueError("Entity id is None")
         url = "https://cpee.org/flow/start/url/"
         xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
         data = {
             "behavior": behavior,
             "url": xml_url,
             "init": '{"id": "'
-            + str(entity.pop('id'))
+            + str(entity.pop("id"))
             + ","
             + str(entity).replace("{", "").replace("}", "")
             + '"}',
