@@ -28,7 +28,7 @@ def handle_task_async():
         entity = {}  # entity object to store the process_entity data
         task_type = request.query.get("task_type")
         entity["id"] = request.query.get("id")  # id of the entity in db
-        if (entity["id"] is not None) or (entity["id"] != ""):
+        if (entity["id"] is not None) and (entity["id"] != ""):
             entity = get_process_entity(entity["id"])
         # everything the entity needs to know but the sim doesnt, saved in the db and can be returned if needed in cpee
         entity["data"] = request.query.get("data", entity["data"])
