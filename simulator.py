@@ -78,8 +78,8 @@ def task(task_type, entity, mean, sigma, callback_url):
             # if entitiy already exists get it from db
             else:
                 resource = get_resource(entity["resource"])
-                print("resource: ", resource, entity, int(resource["current"]) < int(resource["max"]))
-                if int(resource["current"]) < int(resource["max"]):
+                print("resource: ", resource, entity, int(resource["current"]) > 0)
+                if int(resource["current"]) > 0:
                     resource["current"] -= 1
                     set_resource(resource)
                     entity = get_process_entity(entity["id"])
