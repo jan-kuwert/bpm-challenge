@@ -125,12 +125,15 @@ def task(task_type, entity, mean, sigma, callback_url):
                 else:
                     entity["resource_available"] = "false"
         elif task_type == "finish":
-            instance = get_instance(entity["id"])
-            instance[3] = True  # set finished to true
-            set_instance(instance)
-            CURRENT_TIME += 24
-            entity = get_process_entity(entity["id"])
-            print("finished: ", entity, CURRENT_TIME),
+            try:
+                instance = get_instance(entity["id"])
+                instance[3] = True  # set finished to true
+                set_instance(instance)
+                CURRENT_TIME += 24
+                entity = get_process_entity(entity["id"])
+                print("finished: ", entity, CURRENT_TIME),
+            except Exception as e:
+                print("finish_error: ", e)
         callback(callback_url, entity)
     except Exception as e:
         print("task_error: ", e)
