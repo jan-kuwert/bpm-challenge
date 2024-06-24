@@ -371,7 +371,7 @@ def create_instance(entity, behavior="fork_running"):
             "create_instance: ",
             '{"id": "'
             + str(entity.pop("id"))
-            + ', "type": '
+            + '", "type": '
             + '"'
             + entity["data"].split(",")[0]
             + '"'
