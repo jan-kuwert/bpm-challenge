@@ -114,6 +114,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             instance[3] = True  # set finished to true
             set_instance(instance)
             CURRENT_TIME += 24
+            print("finished: ", entity, CURRENT_TIME),
 
         callback(callback_url, entity)
     except Exception as e:
