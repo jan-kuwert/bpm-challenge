@@ -392,7 +392,7 @@ def create_instance(entity, behavior="fork_running"):
             "url": xml_url,
             "init": '{"id": "'
             + str(entity.pop("id"))
-            + ', "type": '
+            + '", "type": '
             + '"'
             + entity["data"].split(",")[0]
             + '"'
@@ -400,7 +400,7 @@ def create_instance(entity, behavior="fork_running"):
             + '"'
             + entity["data"].split(",")[1]
             + '"'
-            + '"}',
+            + '}',
         }
 
         response = requests.post(url, data=data)
