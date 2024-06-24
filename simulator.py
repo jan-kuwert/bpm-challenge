@@ -82,16 +82,16 @@ def task(task_type, entity, mean, sigma, callback_url):
             entity = get_process_entity(entity["id"])
             priority = entity["priority"]
             instance = create_instance(entity["id"], entity)
-            for instance, index in INSTANCES:
+            for i, instance in enumerate(INSTANCES):
                 current_entity = get_process_entity(instance[1])
                 if (
                     current_entity["start_time"] + current_entity["total_time"]
                     < CURRENT_TIME
                 ):
                     INSTANCES = (
-                        INSTANCES[:index]
+                        INSTANCES[:i]
                         + [instance, entity["id"], True, False]
-                        + INSTANCES[index:]
+                        + INSTANCES[i:]
                     )
                     print("Instances: ", INSTANCES)
                     entity["start_time"] = CURRENT_TIME + 24
@@ -342,7 +342,6 @@ def create_instance(object_id, object_data={}, behavior="fork_running"):
     try:
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
-
         url = "https://cpee.org/flow/start/url/"
         xml_url = "https://cpee.org/hub/server/Teaching.dir/Prak.dir/Challengers.dir/Jan_Kuwert.dir/hospital_test.xml"
         data = {
