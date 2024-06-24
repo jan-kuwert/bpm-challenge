@@ -96,21 +96,24 @@ def task(task_type, entity, mean, sigma, callback_url):
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
                 else:
-                    for i, instance in enumerate(INSTANCES):
-                        current_entity = get_process_entity(instance[1])
-                        if (
-                            current_entity["start_time"] + current_entity["total_time"]
-                            < CURRENT_TIME
-                        ):
-                            INSTANCES = (
-                                INSTANCES[:i]
-                                + [new_instance, entity["id"], False, False]
-                                + INSTANCES[i:]
-                            )
-                            entity["start_time"] = CURRENT_TIME + 24
-                            set_process_entity(entity)
-                            added = True
-                            break
+                    try:
+                        for i, instance in enumerate(INSTANCES):
+                            current_entity = get_process_entity(instance[1])
+                            if (
+                                current_entity["start_time"] + current_entity["total_time"]
+                                < CURRENT_TIME
+                            ):
+                                INSTANCES = (
+                                    INSTANCES[:i]
+                                    + [new_instance, entity["id"], False, False]
+                                    + INSTANCES[i:]
+                                )
+                                entity["start_time"] = CURRENT_TIME + 24
+                                set_process_entity(entity)
+                                added = True
+                                break
+                    except Exception as e:
+                        print("reschedule_error1: ", e)
                     if not added:
                         INSTANCES.append(new_instance)
                         entity["start_time"] = CURRENT_TIME + 24
