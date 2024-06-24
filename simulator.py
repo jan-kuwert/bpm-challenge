@@ -84,7 +84,6 @@ def task(task_type, entity, mean, sigma, callback_url):
         elif task_type == "reschedule":
 
             entity = get_process_entity(entity["id"])
-            print(entity)
 
             new_instance = [
                 create_instance(entity),
@@ -92,7 +91,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 True,
                 False,
             ]
-
+            print("new_instance: ", new_instance)
             added = False
             if len(INSTANCES) == 0:
                 INSTANCES.append(new_instance)
@@ -387,9 +386,7 @@ def create_instance(entity, behavior="fork_running"):
         data = {
             "behavior": behavior,
             "url": xml_url,
-            "init": '{"id": "'
-            + str(entity.pop("id"))
-            + ","
+            "init": '{"'
             + str(entity).replace("{", "").replace("}", "")
             + '"}',
         }
