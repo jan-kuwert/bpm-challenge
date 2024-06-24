@@ -253,7 +253,7 @@ def get_process_entity(entity_id):
             SELECT * FROM process_entities
             WHERE id = ?
             """,
-            (str(entity_id),),
+            (int(entity_id),),
         )
         entity = cursor.fetchone()
         connection.close()
