@@ -80,7 +80,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 resource = get_resource(entity["resource"])
                 print("resource: ", resource, entity, int(resource["current"]) > 0)
                 if int(resource["current"]) > 0:
-                    resource["current"] -= 1
+                    resource["current"] = int(resource["current"]) - 1
                     set_resource(resource)
                     entity = get_process_entity(entity["id"])
                     entity["total_time"] = int(entity["total_time"]) + np.random.normal(mean, sigma)
