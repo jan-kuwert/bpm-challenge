@@ -390,9 +390,9 @@ def create_instance(entity, behavior="fork_running"):
             "init": '{"id": "'
             + str(entity.pop("id"))
             + ', "type": '
-            + json.loads(entity['data'])['type']
+            + str(json.loads(entity['data'])['type'])
             + ', "diagnosis": '
-            + json.loads(entity['data'])['diagnosis']
+            + str(json.loads(entity['data'])['diagnosis'])
             + '"}', 
         }
 
