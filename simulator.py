@@ -306,7 +306,7 @@ def add_resource(resource_name, resource_current, resource_max):
         cursor.execute(
             """
             INSERT OR REPLACE INTO resources(name, current, max)
-            VALUES(?,?)
+            VALUES(?,?, ?)
             """,
             (
                 resource_name,
