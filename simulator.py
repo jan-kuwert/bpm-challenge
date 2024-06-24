@@ -361,7 +361,7 @@ def set_resource(resource_data):
         if int(resource_data["current"]) <= int(resource_data["max"]):
             cursor.execute(
                 """
-                UPDATE resource
+                UPDATE resources
                 SET name = ?, current = ?, max = ?
                 WHERE id = ?
                 """,
