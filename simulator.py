@@ -56,7 +56,7 @@ def handle_task_async():
         return e
 
 
-async def task(task_type, entity, mean, sigma, callback_url):
+def task(task_type, entity, mean, sigma, callback_url):
     try:
         global INSTANCES, CURRENT_TIME
         wait = True
@@ -87,7 +87,7 @@ async def task(task_type, entity, mean, sigma, callback_url):
             print(entity)
 
             new_instance = [
-                await create_instance(entity),
+                create_instance(entity),
                 entity["id"],
                 True,
                 False,
