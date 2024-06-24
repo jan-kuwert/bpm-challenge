@@ -91,7 +91,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 True,
                 False,
             ]
-            print("new_instance: ", new_instance)
+            print("new_instance: ", new_instance[1])
             added = False
             if len(INSTANCES) == 0:
                 INSTANCES.append(new_instance)
@@ -118,7 +118,6 @@ def task(task_type, entity, mean, sigma, callback_url):
                     INSTANCES.append(new_instance)
                     entity["start_time"] = CURRENT_TIME + 24
                     set_process_entity(entity)
-            print("Instances: ", INSTANCES)
 
         elif task_type == "resource":
             if entity["resource"] != "":
@@ -390,9 +389,11 @@ def create_instance(entity, behavior="fork_running"):
             "url": xml_url,
             "init": '{"id": "'
             + str(entity.pop("id"))
-            + ","
-            + str(entity).replace("{", "").replace("}", "")
-            + '"}',
+            + ', "type": '
+            + json.loads(entity['data'])['type']
+            + ', "diagnosis": '
+            + json.loads(entity['data'])['diagnosis']
+            + '"}', 
         }
 
         response = requests.post(url, data=data)
@@ -420,13 +421,19 @@ def __init__():
 
 __init__()
 
-entity = {}
-entity["id"] = "request.query.get()"
-entity["data"] = "request.query."
-entity["start_time"] = "request.query.g"
-entity["total_time"] = "request.query.ge"
-entity["resource"] = "request.query."
-entity["priority"] = "request.query"
+# entity = {}
+# entity["id"] = "request.query.get()"
+# entity["data"] = "request.query."
+# entity["start_time"] = "request.query.g"
+# entity["total_time"] = "request.query.ge"
+# entity["data"] = '{ "type": "B", "diagnosis": "C" }'
+# entity["priority"] = "request.query"
 
-print(str(entity))
+# print('{"id": "'
+#             + str(entity.pop("id"))
+#             + ', "type": '
+#             + json.loads(entity['data'])['type']
+#             + ', "diagnosis": '
+#             + json.loads(entity['data'])['diagnosis']
+#             + '"}')
 run(host="::1", port=23453)
