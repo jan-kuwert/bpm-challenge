@@ -367,7 +367,11 @@ def set_resource(resource_data):
 # creates new process instance with object id and if needed additional data
 def create_instance(entity, behavior="fork_running"):
     try:
-        print("create_instance: ", str(json.loads(entity["data"])["type"]), str(json.loads(entity["data"])["diagnosis"]))
+        print(
+            "create_instance: ",
+            entity["data"].split(",")[0],
+            entity["data"].split(",")[1],
+        )
         if behavior not in INSTANCE_BEHAVIORS:
             raise ValueError("Instance Behavior invalid:" + behavior)
         if entity["id"] is None:
@@ -380,9 +384,9 @@ def create_instance(entity, behavior="fork_running"):
             "init": '{"id": "'
             + str(entity.pop("id"))
             + ', "type": '
-            + str(json.loads(entity["data"])["type"])
+            + entity["data"].split(",")[0]
             + ', "diagnosis": '
-            + str(json.loads(entity["data"])["diagnosis"])
+            + entity["data"].split(",")[1]
             + '"}',
         }
 
