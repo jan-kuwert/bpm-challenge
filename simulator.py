@@ -49,6 +49,8 @@ def handle_task_async():
             key_data = request.query.get(key)
             if key_data is not None and key_data != "":
                 entity[key] = key_data
+            elif (entity["id"] is None) or (entity["id"] == ""):
+                entity[key] = None
         mean = request.query.get("mean")
         sigma = request.query.get("sigma")
         set_process_entity(entity)
@@ -78,7 +80,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                 break
             if instance[1]["start_time"] <= CURRENT_TIME:
                 wait = False
-                print("no wait needed")
+                print("wait over")
             else:
                 time.sleep(0.5)
                 print("waiting", entity["id"])
@@ -288,6 +290,7 @@ def get_process_entity(entity_id):
 
 # updates patient data in database
 def set_process_entity(entity):
+    print("set_process_entity: ", entity)
     try:
         connection = sqlite3.connect(PROCESS_NAME + ".db")
         cursor = connection.cursor()
