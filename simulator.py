@@ -28,6 +28,7 @@ LIST = [
     "start_time",  # in hours, tracks entity start time in process
     "total_time",  # in hours, tracks total time of entity in process
     "resource",  # the next resource the entity needs
+    "resource_available",  # if the resource is available for the entity, "true" or "false
     "priority",  # give entity an int priority for queueing, 0 is default and lowest. 1 highest prio, 2 second highest etc
     "mean",  # mean and standard deviation for the normal distribution to calc time of task
     "sigma",
