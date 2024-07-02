@@ -70,7 +70,6 @@ def handle_task_async():
 
 def task(task_type, entity, mean, sigma, callback_url):
     try:
-        print("task: ", task_type, entity["id"])
         global INSTANCES, CURRENT_TIME
         wait = True
         # check if instances turn for processing else wait
@@ -96,6 +95,8 @@ def task(task_type, entity, mean, sigma, callback_url):
                 if int(resource["current"]) > 0:
                     resource["current"] = int(resource["current"]) - 1
                     set_resource(resource)
+                    print(float(entity["total_time"]) + np.random.normal(mean, sigma))
+                    print(entity["total_time"] + np.random.normal(mean, sigma))
                     entity["total_time"] = entity["total_time"] + np.random.normal(
                         mean, sigma
                     )
@@ -151,23 +152,20 @@ def task(task_type, entity, mean, sigma, callback_url):
             else:
                 entity["resource_available"] = "false"
         elif task_type == "finish":
-            try:
-                instance = get_instance(entity["id"])
-                print(1, instance)
-                instance[3] = True  # set finished to true
-                print(2)
-                set_instance(instance)
-                print(3)
-                CURRENT_TIME += 24
-                print(4)
-                entity = get_process_entity(entity["id"])
-                print(5)
-                print("finished: ", entity, CURRENT_TIME),
-            except Exception as e:
-                print("finish_error: ", e)
+            instance = get_instance(entity["id"])
+            print(1, instance)
+            instance[3] = True  # set finished to true
+            print(2)
+            set_instance(instance)
+            print(3)
+            CURRENT_TIME += 24
+            print(4)
+            entity = get_process_entity(entity["id"])
+            print(5)
+            print("finished: ", entity, CURRENT_TIME),
         callback(callback_url, entity)
     except Exception as e:
-        print("task_error: ", e)
+        print(task + "_error: ", entity["id"], e)
         return e
 
 
