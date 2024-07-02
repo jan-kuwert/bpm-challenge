@@ -13,10 +13,10 @@ EXECUTOR = ThreadPoolExecutor(max_workers=1)
 # saves possible behaviors for the cpee instance from config
 INSTANCE_BEHAVIORS = ""
 # contains: instance (cpee response with ID etc.), entity_id (int), wait (bool), finished (bool)
-INSTANCES = []
+QUEUE = []
 # contains at what time which entity uses what resource
 # each resource has its own array in the order of config file
-# each array contains entries [start_time, end_time, entity_id]
+# each array contains entries [resource_name, start_time, end_time, entity_id]
 RESOURCE_SCHEDULES = []
 # saves the current time of the simulation
 CURRENT_TIME = 0
@@ -71,40 +71,39 @@ def handle_task_async():
 
 def task(task_type, entity, mean, sigma, callback_url):
     try:
-        global INSTANCES, CURRENT_TIME
+        global QUEUE, CURRENT_TIME
         wait = True
         # check if instances turn for processing else wait
-        while wait:
-            instance = get_instance(entity["id"])
-            if instance is None or instance[3]:
-                break
-            if instance[1]["start_time"] <= CURRENT_TIME:
-                wait = False
-                print("wait over")
-            else:
-                time.sleep(0.5)
-                print("waiting", entity["id"])
+        if (entity["id"] is not None) and (entity["id"] != ""):
+            while wait:
+                instance = get_instance(entity["id"])
+                if instance is None or instance[3]:
+                    break
+                if instance[1]["start_time"] <= CURRENT_TIME:
+                    wait = False
+                    print("wait over")
+                else:
+                    time.sleep(0.5)
+                    print("waiting", entity["id"])
+
         if task_type == "arrival":
+            print("arrival: ", entity)
             # if entity is new init and add it to db
             if (entity["id"] is None) or (entity["id"] == ""):
                 entity["resource_available"] = "false"
                 entity["id"] = add_process_entity(entity)
-                print("arrival: ", entity)
+                if QUEUE == [] or QUEUE[0]["start_time"] < CURRENT_TIME:
+                    print(
+                        "time set to "
+                        + str(entity["start_time"])
+                        + " from "
+                        + str(CURRENT_TIME)
+                    )
+                    entity["start_time"] = CURRENT_TIME
             # if entitiy already exists get it from db
             else:
-                resource = get_resource(entity["resource"])
-                if int(resource["current"]) > 0:
-                    resource["current"] = int(resource["current"]) - 1
-                    set_resource(resource)
-                    print(float(entity["total_time"]) + np.random.normal(mean, sigma))
-                    print(entity["total_time"] + np.random.normal(mean, sigma))
-                    entity["total_time"] = entity["total_time"] + np.random.normal(
-                        mean, sigma
-                    )
-                    set_process_entity(entity)
-                    entity["resource_available"] = "true"
-                else:
-                    entity["resource_available"] = "false"
+                set_resource_available(entity, mean, sigma)
+
         elif task_type == "reschedule":
             entity = get_process_entity(entity["id"])
             new_instance = [
@@ -114,27 +113,27 @@ def task(task_type, entity, mean, sigma, callback_url):
                 False,
             ]
             added = False
-            if len(INSTANCES) == 0:
+            if len(QUEUE) == 0:
                 # sends the instance to appending
                 added = False
             else:
-                for i, instance in enumerate(INSTANCES):
+                for i, instance in enumerate(QUEUE):
                     current_entity = get_process_entity(instance[1])
                     if (
                         current_entity["start_time"] + current_entity["total_time"]
                         < CURRENT_TIME
                     ):
-                        INSTANCES = (
-                            INSTANCES[:i]
+                        QUEUE = (
+                            QUEUE[:i]
                             + [new_instance, entity["id"], False, False]
-                            + INSTANCES[i:]
+                            + QUEUE[i:]
                         )
                         entity["start_time"] = CURRENT_TIME + 24
                         set_process_entity(entity)
                         added = True
                         break
             if not added:
-                INSTANCES.append(new_instance)
+                QUEUE.append(new_instance)
                 entity["start_time"] = CURRENT_TIME + 24
                 set_process_entity(entity)
         elif task_type == "resource":
@@ -170,9 +169,47 @@ def task(task_type, entity, mean, sigma, callback_url):
         return e
 
 
+def set_resource_available(entity, mean, sigma):
+    entity = get_process_entity(entity["id"])
+    resource = get_resource(entity["resource"])
+    schedule = RESOURCE_SCHEDULES[resource["name"]]
+    #calculate duration of task
+    duration = np.random.normal(mean, sigma)
+    # saves all entries that are using the current resource at the time the entitie wants to use it too
+    relevant_entries = []
+    for entry in schedule:
+        # check end time of entry and start time of current entity
+        if entry[1] >= entity["start_time"] and entry[2] < entity["start_time"]:
+            relevant_entries.append(entry)
+        if len(relevant_entries) == resource["max"]:
+            # if whole resource already in use, sort by end time and take the earliest end time for the new start time
+            relevant_entries.sort(key=lambda x: x[2])
+            # add the waiting time to the total time of the entity until resource is free
+            entity["total_time"] = (
+                entity["total_time"] + entity["start_time"] - relevant_entries[0][2]
+            )
+            entity["start_time"] = relevant_entries[0][2]
+
+    entity["total_time"] = entity["total_time"] + duration
+
+    if len(relevant_entries) < resource["max"]:
+        entity["resource_available"] = "true"
+        set_process_entity(entity)
+        RESOURCE_SCHEDULES[resource["name"]].append(
+            [
+                resource["name"],
+                entity["start_time"],
+                entity["start_time"] + duration,
+                entity["id"],
+            ]
+        )
+    else:
+        entity["resource_available"] = "false"
+
+
 def get_instance(entity_id):
     try:
-        for instance in INSTANCES:
+        for instance in QUEUE:
             if instance[1] == entity_id:
                 return instance
         return None
@@ -182,7 +219,7 @@ def get_instance(entity_id):
 
 def set_instance(updated_instance):
     try:
-        for instance in INSTANCES:
+        for instance in QUEUE:
             if instance[1] == updated_instance[1]:
                 instance = updated_instance
     except Exception as e:
@@ -223,8 +260,8 @@ def create_database():
         CREATE TABLE IF NOT EXISTS resources(
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            current TEXT NOT NULL,
-            max TEXT NOT NULL
+            max TEXT NOT NULL,
+            schedule TEXT
         )
         """
     )
@@ -316,19 +353,19 @@ def set_process_entity(entity):
 
 
 # adds resource to database resource table
-def add_resource(resource_name, resource_current, resource_max):
+def add_resource(resource_name, resource_max, resource_schedule):
     try:
         connection = sqlite3.connect(PROCESS_NAME + ".db")
         cursor = connection.cursor()
         cursor.execute(
             """
-            INSERT OR REPLACE INTO resources(name, current, max)
+            INSERT OR REPLACE INTO resources(name, max, schedule)
             VALUES(?, ?, ?)
             """,
             (
                 resource_name,
-                resource_current,
                 resource_max,
+                resource_schedule,
             ),
         )
         connection.commit()
@@ -356,8 +393,8 @@ def get_resource(resource_name):
         response = {
             "id": resource[0],
             "name": resource[1],
-            "current": resource[2],
-            "max": resource[3],
+            "max": resource[2],
+            "schedule": resource[3],
         }
         print("get_resource: ", response)
         return response
@@ -371,20 +408,19 @@ def set_resource(resource_data):
     try:
         connection = sqlite3.connect("hospital.db")
         cursor = connection.cursor()
-        if int(resource_data["current"]) <= int(resource_data["max"]):
-            cursor.execute(
-                """
-                UPDATE resources
-                SET name = ?, current = ?, max = ?
-                WHERE id = ?
-                """,
-                (
-                    resource_data["name"],
-                    resource_data["current"],
-                    resource_data["max"],
-                    resource_data["id"],
-                ),
-            )
+        cursor.execute(
+            """
+            UPDATE resources
+            SET name = ?, max = ?, schedule = ?
+            WHERE id = ?
+            """,
+            (
+                resource_data["name"],
+                resource_data["max"],
+                resource_data["schedule"],
+                resource_data["id"],
+            ),
+        )
         connection.commit()
         connection.close()
         return
@@ -431,7 +467,8 @@ def __init__():
     create_database()
     # add resources to db
     for resource in config["resources"]:
-        add_resource(resource.pop("name"), resource["current"], resource["max"])
+        add_resource(resource("name"), resource["max"], "[]")
+        RESOURCE_SCHEDULES.append([resource("name")])
     file.close()
 
 
