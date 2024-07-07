@@ -76,7 +76,9 @@ def task(task_type, entity, mean, sigma, callback_url):
         # check if instances turn for processing else wait
         print("task: ", task_type, entity["id"])
         if (entity["id"] is not None) and (entity["id"] != ""):
+            print("waiting for instance")
             while wait:
+                print("in waiting for instance")
                 instance = get_instance(entity["id"])
                 if instance is None or instance[3]:
                     print("no waiting needed", CURRENT_TIME, entity["start_time"])
@@ -101,7 +103,7 @@ def task(task_type, entity, mean, sigma, callback_url):
                         + " from "
                         + str(CURRENT_TIME)
                     )
-                    entity["start_time"] = CURRENT_TIME
+                    CURRENT_TIME = entity["start_time"]
             # if entitiy already exists get it from db
             else:
                 set_resource_available(entity, mean, sigma)
