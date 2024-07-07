@@ -132,13 +132,13 @@ def task(task_type, entity, mean, sigma, callback_url):
                             + [new_instance, entity["id"], False, False]
                             + QUEUE[i:]
                         )
-                        entity["start_time"] = CURRENT_TIME + 24
+                        entity["start_time"] = CURRENT_TIME + 24.0
                         set_process_entity(entity)
                         added = True
                         break
             if not added:
                 QUEUE.append(new_instance)
-                entity["start_time"] = CURRENT_TIME + 24
+                entity["start_time"] = CURRENT_TIME + 24.0
                 set_process_entity(entity)
         elif task_type == "resource":
             if (entity["id"] is not None) or (entity["id"] != ""):
