@@ -79,12 +79,13 @@ def task(task_type, entity, mean, sigma, callback_url):
             print("waiting for instance")
             while wait:
                 instance = get_instance(entity["id"])
-                print("in waiting for instance", instance,instance[1]["start_time"] <= CURRENT_TIME)
-
+                print("in waiting for instance", instance)
+                print(instance[1]["start_time"], CURRENT_TIME)
+                print(float(instance[1]["start_time"]) <= CURRENT_TIME)
                 if instance is None or instance[3]:
                     print("no waiting needed", CURRENT_TIME, entity["start_time"])
                     break
-                if instance[1]["start_time"] <= CURRENT_TIME:
+                if float(instance[1]["start_time"]) <= CURRENT_TIME:
                     wait = False
                     print("wait over")
                 else:
