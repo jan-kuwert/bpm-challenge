@@ -76,18 +76,17 @@ def task(task_type, entity, mean, sigma, callback_url):
         # check if instances turn for processing else wait
         print("task: ", task_type, entity["id"])
         if (entity["id"] is not None) and (entity["id"] != ""):
-            print("waiting for instance")
+            entity = get_process_entity(entity["id"])
             while wait:
                 instance = get_instance(entity["id"])
                 print("in waiting for instance", instance)
                 if instance is not None:
-                    print(instance[1]["start_time"], CURRENT_TIME)
-                    print(float(instance[1]["start_time"]) <= CURRENT_TIME)
+                    print(entity["start_time"], CURRENT_TIME)
                 
-                if instance is None or instance[3]:
+                if instance is None:
                     print("no waiting needed", CURRENT_TIME, entity["start_time"])
                     break
-                if float(instance[1]["start_time"]) <= CURRENT_TIME:
+                if entity["start_time"] <= CURRENT_TIME:
                     wait = False
                     print("wait over")
                 else:
