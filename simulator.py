@@ -74,6 +74,7 @@ def task(task_type, entity, mean, sigma, callback_url):
         global QUEUE, CURRENT_TIME
         wait = True
         # check if instances turn for processing else wait
+        print("task: ", task_type, entity["id"])
         if (entity["id"] is not None) and (entity["id"] != ""):
             while wait:
                 instance = get_instance(entity["id"])
@@ -171,41 +172,45 @@ def task(task_type, entity, mean, sigma, callback_url):
 
 
 def set_resource_available(entity, mean, sigma):
-    entity = get_process_entity(entity["id"])
-    resource = get_resource(entity["resource"])
-    schedule = RESOURCE_SCHEDULES[resource["name"]]
-    # calculate duration of task
-    duration = np.random.normal(mean, sigma)
-    # saves all entries that are using the current resource at the time the entitie wants to use it too
-    relevant_entries = []
-    for entry in schedule:
-        # check end time of entry and start time of current entity
-        if entry[1] >= entity["start_time"] and entry[2] < entity["start_time"]:
-            relevant_entries.append(entry)
-        if len(relevant_entries) == resource["max"]:
-            # if whole resource already in use, sort by end time and take the earliest end time for the new start time
-            relevant_entries.sort(key=lambda x: x[2])
-            # add the waiting time to the total time of the entity until resource is free
-            entity["total_time"] = (
-                entity["total_time"] + entity["start_time"] - relevant_entries[0][2]
+    try:
+        entity = get_process_entity(entity["id"])
+        resource = get_resource(entity["resource"])
+        schedule = RESOURCE_SCHEDULES[resource["name"]]
+        # calculate duration of task
+        duration = np.random.normal(mean, sigma)
+        # saves all entries that are using the current resource at the time the entitie wants to use it too
+        relevant_entries = []
+        for entry in schedule:
+            # check end time of entry and start time of current entity
+            if entry[1] >= entity["start_time"] and entry[2] < entity["start_time"]:
+                relevant_entries.append(entry)
+            if len(relevant_entries) == resource["max"]:
+                # if whole resource already in use, sort by end time and take the earliest end time for the new start time
+                relevant_entries.sort(key=lambda x: x[2])
+                # add the waiting time to the total time of the entity until resource is free
+                entity["total_time"] = (
+                    entity["total_time"] + entity["start_time"] - relevant_entries[0][2]
+                )
+                entity["start_time"] = relevant_entries[0][2]
+
+        entity["total_time"] = entity["total_time"] + duration
+
+        if len(relevant_entries) < resource["max"]:
+            entity["resource_available"] = "true"
+            set_process_entity(entity)
+            RESOURCE_SCHEDULES[resource["name"]].append(
+                [
+                    resource["name"],
+                    entity["start_time"],
+                    entity["start_time"] + duration,
+                    entity["id"],
+                ]
             )
-            entity["start_time"] = relevant_entries[0][2]
-
-    entity["total_time"] = entity["total_time"] + duration
-
-    if len(relevant_entries) < resource["max"]:
-        entity["resource_available"] = "true"
-        set_process_entity(entity)
-        RESOURCE_SCHEDULES[resource["name"]].append(
-            [
-                resource["name"],
-                entity["start_time"],
-                entity["start_time"] + duration,
-                entity["id"],
-            ]
-        )
-    else:
-        entity["resource_available"] = "false"
+        else:
+            entity["resource_available"] = "false"
+    except Exception as e:
+        print("set_resource_available_error: ", e)
+        return e
 
 
 def get_instance(entity_id):
