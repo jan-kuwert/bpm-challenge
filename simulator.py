@@ -468,8 +468,8 @@ def __init__():
     create_database()
     # add resources to db
     for resource in config["resources"]:
-        add_resource(resource("name"), resource["max"], "[]")
-        RESOURCE_SCHEDULES.append([resource("name")])
+        add_resource(resource["name"], resource["max"], "[]")
+        RESOURCE_SCHEDULES.append([resource["name"]])
     file.close()
 
 
