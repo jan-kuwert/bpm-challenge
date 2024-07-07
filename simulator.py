@@ -78,6 +78,7 @@ def task(task_type, entity, mean, sigma, callback_url):
             while wait:
                 instance = get_instance(entity["id"])
                 if instance is None or instance[3]:
+                    print("no waiting needed", CURRENT_TIME, entity["start_time"])
                     break
                 if instance[1]["start_time"] <= CURRENT_TIME:
                     wait = False
@@ -173,7 +174,7 @@ def set_resource_available(entity, mean, sigma):
     entity = get_process_entity(entity["id"])
     resource = get_resource(entity["resource"])
     schedule = RESOURCE_SCHEDULES[resource["name"]]
-    #calculate duration of task
+    # calculate duration of task
     duration = np.random.normal(mean, sigma)
     # saves all entries that are using the current resource at the time the entitie wants to use it too
     relevant_entries = []
