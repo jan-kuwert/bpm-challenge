@@ -19,7 +19,7 @@ QUEUE = []
 # each array contains entries [resource_name, start_time, end_time, entity_id]
 RESOURCE_SCHEDULES = []
 # saves the current time of the simulation
-CURRENT_TIME = 0
+CURRENT_TIME = 0.0
 PROCESS_NAME = "process"  # default process name, allow to name i.e. db file
 # process_entity = the element that is being processed (in the hospital case its a patient)
 
@@ -79,15 +79,11 @@ def task(task_type, entity, mean, sigma, callback_url):
             entity = get_process_entity(entity["id"])
             while wait:
                 instance = get_instance(entity["id"])
-                print("in waiting for instance", instance)
-                if instance is not None:
-                    print(entity["start_time"], CURRENT_TIME)
-                    print(float(entity["start_time"]) <= CURRENT_TIME)
-                    print()
+
                 if instance is None:
                     print("no waiting needed", CURRENT_TIME, entity["start_time"])
                     break
-                if entity["start_time"] <= CURRENT_TIME:
+                if float(entity["start_time"]) <= CURRENT_TIME:
                     wait = False
                     print("wait over")
                 else:
