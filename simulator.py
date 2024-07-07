@@ -78,8 +78,9 @@ def task(task_type, entity, mean, sigma, callback_url):
         if (entity["id"] is not None) and (entity["id"] != ""):
             print("waiting for instance")
             while wait:
-                print("in waiting for instance")
                 instance = get_instance(entity["id"])
+                print("in waiting for instance", instance)
+
                 if instance is None or instance[3]:
                     print("no waiting needed", CURRENT_TIME, entity["start_time"])
                     break
