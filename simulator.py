@@ -45,7 +45,6 @@ def handle_task_async():
         entity["id"] = request.query.get("id")  # id of the entity in db
         if (entity["id"] is not None) and (entity["id"] != ""):
             entity = get_process_entity(entity["id"])
-
         for key in LIST:
             key_data = request.query.get(key)
             if key_data is not None and key_data != "":

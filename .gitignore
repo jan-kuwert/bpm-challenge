@@ -163,5 +163,6 @@ cython_debug/
 
 # Additional Files and Folders
 /competition example code
+/provided
 
 *.db
