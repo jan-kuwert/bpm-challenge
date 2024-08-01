@@ -162,7 +162,5 @@ cython_debug/
 #.idea/
 
 # Additional Files and Folders
-/competition example code
-/provided
-
+*/temp
 *.db
