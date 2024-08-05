@@ -1,7 +1,6 @@
 from enum import Enum, auto
 from plannerhelper import PlannerHelper
 
-
 class EventType(Enum):
 	CASE_ARRIVAL = auto()
 	ACTIVATE_TASK = auto()
