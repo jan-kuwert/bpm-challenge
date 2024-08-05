@@ -4,6 +4,7 @@ from problems import HealthcareProblem
 from reporter import EventLogReporter
 import random
 
+
 class NaivePlanner(Planner):
     def __init__(self, eventlog_file, data_columns):
         super().__init__()
@@ -20,7 +21,9 @@ class NaivePlanner(Planner):
         # next_plannable_time = round((simulation_time + 24) * 2 + 0.5) / 2
         for case_id, element_labels in sorted(plannable_elements.items()):
             for element_label in element_labels:
-                next_plannable_time = round((simulation_time + 24) + random.randint(25,168)) #improved random replan between 25h and 1 week
+                next_plannable_time = round(
+                    simulation_time + random.randint(25, 168)
+                )  # improved random replan between 25h and 1 week
                 planned_elements.append((case_id, element_label, next_plannable_time))
         return planned_elements
 

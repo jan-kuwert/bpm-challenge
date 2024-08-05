@@ -16,11 +16,20 @@ class TabusearchPlanner(Planner):
             case_id, element, timestamp, resource, lifecycle_state
         )
 
-        if lifecycle_state == "":
-            self.planned_patients.add(case_id)
+        if lifecycle_state == "Eventtype.CASE_ARRIVAL":
+            pass
+        elif lifecycle_state == "Eventtype.START_TASK":
+            pass
+        elif lifecycle_state == "Eventtype.COMPLETE_TASK" or lifecycle_state == "EventType.COMPLETE_EVENT":
+            pass
+        elif lifecycle_state == "EventType.SCHEDULE_RESOURCES":
+            pass
+        elif lifecycle_state == "EventType.ASSIGN_RESOURCE":
+            pass
+        
+
 
     def plan(self, plannable_elements, simulation_time):
-        # print(self.planner_helper.available_resources()[1])
         for item in plannable_elements.items():
             print(
                 item,
@@ -43,6 +52,7 @@ result = simulator.run(20 * 24)
 
 print(result)
 
+# print(self.planner_helper.available_resources()[1])
 
 # def available_resources(self, resource_type="all"):
 #     """
