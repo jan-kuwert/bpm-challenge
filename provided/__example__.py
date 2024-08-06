@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from simulator import Simulator
 from planners import Planner
 from problems import HealthcareProblem
@@ -11,7 +12,9 @@ class NaivePlanner(Planner):
         self.planned_patients = set()
 
     def report(self, case_id, element, timestamp, resource, lifecycle_state):
-        self.eventlog_reporter.callback(case_id, element, timestamp, resource, lifecycle_state)
+        self.eventlog_reporter.callback(
+            case_id, element, timestamp, resource, lifecycle_state
+        )
 
     def plan(self, plannable_elements, simulation_time):
         planned_elements = []
@@ -20,11 +23,11 @@ class NaivePlanner(Planner):
             for element_label in element_labels:
                 planned_elements.append((case_id, element_label, next_plannable_time))
         return planned_elements
-    
+
 
 planner = NaivePlanner("./temp/event_log.csv", ["diagnosis"])
 problem = HealthcareProblem()
 simulator = Simulator(planner, problem)
-result = simulator.run(365*24)
+result = simulator.run(365 * 24)
 
 print(result)

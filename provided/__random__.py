@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
+import random
+
 from simulator import Simulator
 from planners import Planner
 from problems import HealthcareProblem
 from reporter import EventLogReporter
-import random
 
 
 class NaivePlanner(Planner):
